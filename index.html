@@ -1,0 +1,2754 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0971D6">
+<title>Corporación Aceros Arequipa S.A. · Análisis financiero 2025</title>
+
+<!-- ══════════════════════════════════════════════════════════════════════
+     FUENTES Y LIBRERÍAS (no tocar salvo que quieras actualizar versiones)
+     ══════════════════════════════════════════════════════════════════════ -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+
+<style>
+/* ═══════════════════════════════════════════════════════════════════════
+   SECCIÓN CSS 1 — VARIABLES DE DISEÑO
+   ═══════════════════════════════════════════════════════════════════════
+   Aquí puedes cambiar los colores de TODA la app:
+   --primary  : color principal (sidebar, botones, acentos)
+   --bg       : fondo general
+   --positive : verde para tendencias favorables
+   --negative : rojo para tendencias desfavorables
+   --beige    : fondo de las cajas de interpretación
+   --e1..e6   : paleta Excel para gráficos
+   --sb       : ancho del sidebar expandido (260px)
+   ═══════════════════════════════════════════════════════════════════════ */
+*{box-sizing:border-box}
+:root{
+  --primary:#0971D6;--bg:#F4F6F8;--text:#333333;--positive:#2E7D32;--negative:#C62828;
+  --beige:#FDF6E3;--card:#FFFFFF;--border:#E1E5EA;
+  --e1:#4472C4;--e2:#ED7D31;--e3:#A5A5A5;--e4:#FFC000;--e5:#5B9BD5;--e6:#70AD47;
+  --sb:260px;
+}
+html,body{margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font:400 15px/1.55 Archivo,system-ui,-apple-system,sans-serif;font-variant-numeric:tabular-nums}
+h1,h2,h3,h4{font-stretch:92%;font-weight:800;margin:0;line-height:1.2}
+h2{font-size:26px;margin-bottom:4px}
+h3{font-size:17px;margin:22px 0 10px}
+p{margin:0 0 10px}
+.sub{color:#5b6673;margin:0 0 16px;max-width:80ch}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   SECCIÓN CSS 2 — BARRA LATERAL (SIDEBAR)
+   ═══════════════════════════════════════════════════════════════════════ */
+.sidebar{position:fixed;left:0;top:0;bottom:0;width:var(--sb);background:var(--primary);color:#fff;display:flex;flex-direction:column;z-index:50;transition:width .22s ease,transform .22s ease}
+.side-head{display:flex;align-items:center;gap:10px;padding:14px;border-bottom:1px solid rgba(255,255,255,.18)}
+
+/* ── LOGO ────────────────────────────────────────────────────────────────
+   El logo es un cuadro de 38×38 px. Acepta texto (monograma "AA") o
+   imagen JPG/PNG. Ver instrucciones completas en el HTML más abajo.
+   ═══════════════════════════════════════════════════════════════════════ */
+.logo{width:38px;height:38px;border-radius:10px;background:#fff;color:var(--primary);display:flex;align-items:center;justify-content:center;font-weight:800;flex:0 0 auto;letter-spacing:-.5px;overflow:hidden}
+.logo-text{font-size:16px;line-height:1}
+.logo img{width:100%;height:100%;object-fit:cover;display:block;border-radius:10px}
+/* ↑ Si tu logo es horizontal (más ancho que alto), cambia
+     object-fit:cover  →  object-fit:contain                              */
+
+.side-title{display:flex;flex-direction:column;line-height:1.15;overflow:hidden;flex:1}
+.side-title strong{font-size:14.5px;white-space:nowrap}
+.side-title span{font-size:11.5px;opacity:.85;white-space:nowrap}
+.icon-btn{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.28);color:#fff;border-radius:8px;padding:5px 8px;font-size:13px;line-height:1;cursor:pointer}
+#nav{padding:10px 8px;flex:1;overflow-y:auto}
+.navbtn{display:flex;align-items:center;gap:12px;width:100%;background:none;border:0;color:#fff;font:inherit;font-weight:600;font-size:14px;padding:11px 12px;border-radius:8px;cursor:pointer;text-align:left;position:relative;opacity:.92}
+.navbtn:hover{background:rgba(255,255,255,.1)}
+.navbtn[aria-current="page"]{background:rgba(255,255,255,.15);opacity:1}
+.navbtn[aria-current="page"]::before{content:"";position:absolute;left:0;top:8px;bottom:8px;width:4px;border-radius:2px;background:#fff}
+.navbtn svg{width:20px;height:20px;flex:0 0 auto}
+.side-foot{padding:12px;border-top:1px solid rgba(255,255,255,.18)}
+.side-foot button{width:100%;display:flex;gap:8px;align-items:center;justify-content:center;background:rgba(255,255,255,.14);color:#fff;border:1px solid rgba(255,255,255,.3);border-radius:8px;padding:9px;cursor:pointer;font:inherit;font-weight:700;font-size:14px}
+
+/* ── ESTADO COLAPSADO ────────────────────────────────────────────────────
+   Al colapsar (body.collapsed), el sidebar queda en 72 px de ancho.
+   IMPORTANTE: el botón #collapse NUNCA se oculta, para que el usuario
+   pueda hacer clic y EXPANDIR de nuevo.
+   ═══════════════════════════════════════════════════════════════════════ */
+body.collapsed{--sb:72px}
+body.collapsed .side-title,
+body.collapsed .side-foot .lbl,
+body.collapsed .side-head .logo{display:none}
+body.collapsed .side-head{padding:14px 8px;justify-content:center}
+body.collapsed .navbtn{justify-content:center}
+body.collapsed .navbtn span{display:none}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   SECCIÓN CSS 3 — ÁREA PRINCIPAL
+   ═══════════════════════════════════════════════════════════════════════ */
+.main{margin-left:var(--sb);transition:margin .22s ease;min-height:100vh}
+.topbar{position:sticky;top:0;z-index:30;background:var(--card);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;padding:12px 22px;flex-wrap:wrap}
+.topbar h1{font-size:19px;flex:1;min-width:150px}
+.badge{font-size:12px;font-weight:700;padding:4px 11px;border-radius:999px;background:#E8EBEF;color:#5b6673;white-space:nowrap}
+.badge.sim{background:var(--e2);color:#fff}
+.btn{border:1px solid var(--border);background:#fff;color:var(--text);border-radius:8px;padding:7px 12px;font-weight:700;font-size:13.5px;cursor:pointer}
+.btn:hover{border-color:var(--primary);color:var(--primary)}
+.banner{background:#E9F1FB;color:#0a4f97;font-size:12.5px;padding:8px 22px;border-bottom:1px solid var(--border)}
+main#view{padding:22px;max-width:1180px}
+.hamb{display:none;border:1px solid var(--border);background:#fff;border-radius:8px;padding:5px 10px;font-size:18px;line-height:1;cursor:pointer}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:45;display:none}
+.sec{display:none}
+.sec.on{display:block}
+@media(max-width:960px){
+  .sidebar{transform:translateX(-100%);width:260px}
+  body.drawer .sidebar{transform:none}
+  body.drawer .overlay{display:block}
+  .main{margin-left:0}
+  .hamb{display:inline-flex}
+  main#view{padding:16px}
+  body.collapsed{--sb:260px}
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   SECCIÓN CSS 4 — COMPONENTES REUTILIZABLES
+   ═══════════════════════════════════════════════════════════════════════ */
+.grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(min(260px,100%),1fr))}
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 16px;cursor:pointer;transition:box-shadow .15s,border-color .15s;position:relative}
+.card:hover{border-color:var(--primary);box-shadow:0 4px 16px rgba(9,113,214,.13)}
+.card:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+.card h4{font-size:12.5px;font-weight:700;color:#5b6673;margin:0 0 4px;line-height:1.3}
+.card .v{font-size:26px;font-weight:800;font-stretch:90%;line-height:1.12}
+.card .s{font-size:12.5px;color:#6b7684;margin-top:3px}
+.card .f{font-size:13px;margin:8px 0 0;color:#4a5560}
+.bd{display:inline-block;font-size:13px;font-weight:800;margin-left:7px;vertical-align:middle}
+.bd.pos{color:var(--positive)}.bd.neg{color:var(--negative)}.bd.neu{color:var(--e3)}
+.chip{display:inline-block;font-size:11px;font-weight:800;padding:2px 8px;border-radius:999px;margin-left:8px;vertical-align:middle;white-space:nowrap}
+.chip.pos{background:#E6F4EA;color:var(--positive)}
+.chip.neg{background:#FDECEA;color:var(--negative)}
+.chip.neu{background:#F1F3F5;color:#5b6673}
+.read{background:var(--card);border-left:4px solid var(--primary);border-radius:0 10px 10px 0;padding:14px 18px;margin:14px 0}
+.read p:last-child{margin-bottom:0}
+.box{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px}
+.note{font-size:12.5px;color:#6b7684;margin-top:10px}
+.eq{display:flex;gap:12px;align-items:stretch;flex-wrap:wrap}
+.eq .card{flex:1;min-width:170px}
+.eq .op{align-self:center;font-size:24px;font-weight:800;color:var(--primary);padding:0 2px}
+
+/* ── Tablas ───────────────────────────────────────────────────────────── */
+.tw{overflow-x:auto;padding:0}
+table{border-collapse:collapse;width:100%;font-size:13.5px}
+th,td{padding:7px 10px;border-bottom:1px solid var(--border);text-align:right;white-space:nowrap}
+th:first-child,td:first-child{text-align:left;white-space:normal}
+thead th{color:#5b6673;font-weight:700;font-size:12px;background:#F8FAFC}
+tr.grp td{background:#EAF2FD;color:var(--primary);font-weight:800;font-size:12px;text-transform:uppercase;letter-spacing:.04em}
+tr.t td{font-weight:800;background:color-mix(in srgb,var(--primary) 8%,transparent)}
+tr.row{cursor:pointer}
+tr.row:hover td{background:#F5F9FF}
+tr.row.t:hover td{background:color-mix(in srgb,var(--primary) 15%,transparent)}
+.ch{display:inline-block;width:16px;color:var(--primary);font-size:11px}
+tr.interp td{padding:0;border-bottom:1px solid var(--border)}
+.ibox{background:var(--beige);border-left:4px solid var(--primary);padding:14px 18px;border-radius:0 8px 8px 0;font-size:13.5px;white-space:normal;line-height:1.55}
+.ibox .it{font-weight:800;color:var(--primary);margin:0 0 6px;font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+.ibox p{margin:0 0 8px}
+.ibox p:last-child{margin-bottom:0}
+
+/* ── Gráficos ─────────────────────────────────────────────────────────── */
+.chart-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap}
+.chart-head h4{margin:0;font-size:14px}
+.csel{font:inherit;font-size:13px;padding:4px 8px;border:1px solid var(--border);border-radius:6px;background:#fff;color:var(--text)}
+.cv{position:relative;height:270px}
+
+/* ── Modal ────────────────────────────────────────────────────────────── */
+dialog#modal{border:0;border-radius:14px;padding:0;max-width:640px;width:calc(100% - 32px);box-shadow:0 24px 70px rgba(0,0,0,.35);color:var(--text)}
+dialog#modal::backdrop{background:rgba(0,0,0,.5)}
+.mhead{display:flex;align-items:center;gap:10px;padding:16px 20px;border-bottom:1px solid var(--border)}
+.mhead h3{margin:0;flex:1;font-size:17px}
+.mhead button{border:0;background:none;font-size:17px;line-height:1;padding:5px 9px;border-radius:7px;cursor:pointer;color:#5b6673}
+.mhead button:hover{background:#F1F3F5}
+.mbody{padding:16px 20px;font-size:14px;max-height:62vh;overflow:auto}
+.mbody p:last-child{margin-bottom:0}
+.mfoot{padding:12px 20px;border-top:1px solid var(--border);text-align:right}
+.mrow{display:grid;gap:10px;grid-template-columns:1fr 1fr;margin:10px 0}
+.mrow>div{background:#F8FAFC;border:1px solid var(--border);border-radius:8px;padding:10px}
+.mrow span{display:block;font-size:11px;color:#6b7684;text-transform:uppercase;letter-spacing:.05em;font-weight:700}
+.mrow code{display:block;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px;margin:5px 0;color:#33475b;white-space:normal}
+.mrow b{font-size:18px;color:var(--primary)}
+
+/* ── Simulador ────────────────────────────────────────────────────────── */
+.sim{display:grid;gap:14px 18px;grid-template-columns:repeat(auto-fill,minmax(min(230px,100%),1fr))}
+.sim label{display:block;font-size:12.5px;font-weight:700;color:#5b6673;margin-bottom:4px}
+.sim input[type=range]{width:100%;accent-color:var(--primary)}
+.sim input[type=number]{width:100%;padding:7px 9px;border:1px solid var(--border);border-radius:8px;font:inherit;background:#fff;color:var(--text)}
+details.ed{margin:12px 0}
+details.ed summary{cursor:pointer;font-weight:700;color:var(--primary);padding:6px 0}
+button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible,tr.row:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   SECCIÓN CSS 5 — CUADRO DE MANDO INTEGRAL (CMI)
+   Todo el CSS de esta sección está aislado bajo #s-cmi para que no
+   interfiera con el resto de la aplicación (y viceversa).
+   ═══════════════════════════════════════════════════════════════════════ */
+#s-cmi{container-type:inline-size;font-family:inherit;line-height:1.5}
+#s-cmi *{box-sizing:border-box}
+#s-cmi h1,#s-cmi h2,#s-cmi h3,#s-cmi h4,#s-cmi p,#s-cmi ul{margin:0;padding:0}
+#s-cmi button,#s-cmi input{font-family:inherit}
+#s-cmi th,#s-cmi td{text-align:left;white-space:normal;padding:0;background:none;font-size:inherit;color:inherit}
+#s-cmi table{font-size:13px}
+#s-cmi th{font-size:13px}
+#s-cmi .container{max-width:none;margin:0}
+#s-cmi { --bg: #f1f5f9; --surface: #ffffff; --navy: #0f2537; --slate: #1e3a5f; --steel: #3b6998; --accent: #c84b31; --text: #1e293b; --muted: #64748b; --border: #e2e8f0; --green-bg: #dcfce7; --green-txt: #166534; --amber-bg: #fef3c7; --amber-txt: #92400e; --red-bg: #fee2e2; --red-txt: #991b1b; --proxy-bg: #e0f2fe; --proxy-txt: #075985; }
+#s-cmi {   color: var(--text); line-height: 1.5;  }
+#s-cmi .container { max-width: 1420px; margin: 0 auto; }
+#s-cmi header { background: linear-gradient(135deg, var(--navy) 0%, var(--slate) 100%); color: #fff; padding: 24px 30px; border-radius: 14px; margin-bottom: 20px; box-shadow: 0 6px 18px rgba(15, 37, 55, 0.16); display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 16px; }
+#s-cmi header .tag { display: inline-block; background: rgba(255,255,255,0.16); padding: 4px 12px; border-radius: 20px; font-size: 11.5px; letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 8px; }
+#s-cmi header h1 { font-size: 24px; font-weight: 700; margin-bottom: 4px; }
+#s-cmi header p { font-size: 13.5px; color: #cbd5e1; }
+#s-cmi .hint-pill { background: rgba(255,255,255,0.14); border: 1px solid rgba(255,255,255,0.28); padding: 10px 16px; border-radius: 10px; font-size: 13px; color: #f8fafc; max-width: 360px; }
+#s-cmi .hint-pill strong { color: #fde047; }
+#s-cmi .kpi-strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(225px, 1fr)); gap: 14px; margin-bottom: 22px; }
+#s-cmi .kpi-card { background: var(--surface); border: 2px solid var(--border); border-radius: 12px; padding: 16px 18px; cursor: pointer; transition: all 0.18s ease; position: relative; box-shadow: 0 2px 6px rgba(0,0,0,0.03); }
+#s-cmi .kpi-card:hover { transform: translateY(-2px); border-color: var(--steel); box-shadow: 0 8px 18px rgba(15, 37, 55, 0.09); }
+#s-cmi .kpi-card.selected { border-color: var(--navy); background: #f8fbff; box-shadow: 0 0 0 3px rgba(30, 58, 95, 0.15); }
+#s-cmi .kpi-card .click-badge { position: absolute; top: 12px; right: 12px; font-size: 10.5px; background: #eef2ff; color: var(--slate); padding: 2px 8px; border-radius: 10px; font-weight: 600; }
+#s-cmi .kpi-card .label { font-size: 11.5px; color: var(--muted); text-transform: uppercase; font-weight: 700; padding-right: 65px; }
+#s-cmi .kpi-card .val { font-size: 24px; font-weight: 800; color: var(--navy); margin: 6px 0 4px; }
+#s-cmi .kpi-card .delta { font-size: 12.5px; font-weight: 600; }
+#s-cmi .pos { color: var(--green-txt); }
+#s-cmi .neg { color: var(--red-txt); }
+#s-cmi .warn { color: var(--amber-txt); }
+#s-cmi .workspace { display: grid; grid-template-columns: 1fr 420px; gap: 20px; align-items: start; }
+#s-cmi .controls { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; align-items: center; justify-content: space-between; }
+#s-cmi .tabs { display: flex; flex-wrap: wrap; gap: 6px; }
+#s-cmi .tab-btn { background: var(--surface); border: 1px solid var(--border); color: var(--text); padding: 8px 13px; border-radius: 8px; cursor: pointer; font-size: 12.5px; font-weight: 600; transition: all 0.15s ease; }
+#s-cmi .tab-btn:hover { border-color: var(--slate); }
+#s-cmi .tab-btn.active { background: var(--navy); color: #fff; border-color: var(--navy); }
+#s-cmi .search-input { padding: 8px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 13px; min-width: 210px; background: var(--surface); }
+#s-cmi .panel { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 18px; box-shadow: 0 2px 8px rgba(0,0,0,0.03); }
+#s-cmi .panel-header { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px; border-bottom: 2px solid var(--bg); padding-bottom: 10px; margin-bottom: 14px; }
+#s-cmi .panel-header h2 { font-size: 16.5px; color: var(--navy); }
+#s-cmi .panel-header span { font-size: 12px; color: var(--muted); }
+#s-cmi .causal-intro { font-size: 13px; color: var(--muted); margin-bottom: 14px; background: #f8fafc; padding: 10px 14px; border-radius: 8px; border-left: 3px solid var(--steel); }
+#s-cmi .causal-stack { display: flex; flex-direction: column; gap: 6px; }
+#s-cmi .causal-level { border: 2px solid var(--border); border-radius: 12px; padding: 14px 16px; transition: all 0.18s ease; position: relative; }
+#s-cmi .causal-level.lvl-fin { background: linear-gradient(90deg, #fefce8 0%, #ffffff 35%); border-left: 6px solid #ca8a04; }
+#s-cmi .causal-level.lvl-cli { background: linear-gradient(90deg, #f0fdf4 0%, #ffffff 35%); border-left: 6px solid #16a34a; }
+#s-cmi .causal-level.lvl-proc { background: linear-gradient(90deg, #eff6ff 0%, #ffffff 35%); border-left: 6px solid #2563eb; }
+#s-cmi .causal-level.lvl-apr { background: linear-gradient(90deg, #fff7ed 0%, #ffffff 35%); border-left: 6px solid #ea580c; }
+#s-cmi .causal-level-top { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 8px; }
+#s-cmi .lvl-tag { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; padding: 3px 9px; border-radius: 12px; }
+#s-cmi .lvl-fin .lvl-tag { background: #fef08a; color: #854d0e; }
+#s-cmi .lvl-cli .lvl-tag { background: #bbf7d0; color: #166534; }
+#s-cmi .lvl-proc .lvl-tag { background: #bfdbfe; color: #1e40af; }
+#s-cmi .lvl-apr .lvl-tag { background: #fed7aa; color: #9a3412; }
+#s-cmi .causal-hypothesis { font-size: 13px; color: var(--text); margin-bottom: 10px; }
+#s-cmi .causal-hypothesis strong { color: var(--navy); }
+#s-cmi .causal-nodes { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 8px; }
+#s-cmi .c-node { background: #ffffff; border: 1.5px solid var(--border); border-radius: 8px; padding: 9px 12px; cursor: pointer; transition: all 0.15s ease; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+#s-cmi .c-node:hover { border-color: var(--navy); transform: translateY(-1px); box-shadow: 0 4px 10px rgba(15,37,55,0.08); }
+#s-cmi .c-node.selected { border-color: var(--navy); background: #e0edff; }
+#s-cmi .c-node .cn-name { font-size: 12px; font-weight: 700; color: var(--navy); }
+#s-cmi .c-node .cn-sub { font-size: 11px; color: var(--muted); }
+#s-cmi .c-node .cn-val { font-size: 13px; font-weight: 800; text-align: right; white-space: nowrap; }
+#s-cmi .causal-arrow { display: flex; align-items: center; justify-content: center; gap: 8px; color: var(--steel); font-size: 11.5px; font-weight: 700; padding: 2px 0; }
+#s-cmi .causal-arrow span { background: #e2e8f0; color: var(--navy); padding: 2px 12px; border-radius: 12px; }
+#s-cmi table { width: 100%; border-collapse: collapse; font-size: 13px; }
+#s-cmi th { background: #f8fafc; color: var(--slate); font-weight: 700; text-align: left; padding: 10px; border-bottom: 2px solid var(--border); }
+#s-cmi tr.kpi-row { cursor: pointer; transition: background 0.14s ease; }
+#s-cmi tr.kpi-row td { padding: 10px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+#s-cmi tr.kpi-row:hover td { background: #f1f7fe; }
+#s-cmi tr.kpi-row.selected td { background: #e0edff; border-top: 1px solid #93c5fd; border-bottom: 1px solid #93c5fd; }
+#s-cmi .num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+#s-cmi .center { text-align: center; }
+#s-cmi .badge { display: inline-block; padding: 3px 9px; border-radius: 12px; font-size: 11px; font-weight: 700; white-space: nowrap; }
+#s-cmi .b-green { background: var(--green-bg); color: var(--green-txt); }
+#s-cmi .b-amber { background: var(--amber-bg); color: var(--amber-txt); }
+#s-cmi .b-red { background: var(--red-bg); color: var(--red-txt); }
+#s-cmi .b-proxy { background: var(--proxy-bg); color: var(--proxy-txt); }
+#s-cmi .inspector { position: sticky; top: 76px; background: var(--surface); border: 2px solid var(--navy); border-radius: 14px; padding: 22px; box-shadow: 0 10px 25px rgba(15, 37, 55, 0.1); }
+#s-cmi .inspector-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+#s-cmi .inspector-persp { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--steel); background: #eff6ff; padding: 3px 10px; border-radius: 12px; }
+#s-cmi .inspector h3 { font-size: 19px; color: var(--navy); margin-bottom: 12px; line-height: 1.3; }
+#s-cmi .insp-metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; background: #f8fafc; border: 1px solid var(--border); border-radius: 10px; padding: 12px; margin-bottom: 16px; text-align: center; }
+#s-cmi .insp-metrics .m-lbl { font-size: 11px; color: var(--muted); font-weight: 600; }
+#s-cmi .insp-metrics .m-val { font-size: 15px; font-weight: 800; color: var(--navy); margin-top: 2px; }
+#s-cmi .insp-bar-box { margin-bottom: 16px; background: #f8fafc; padding: 12px; border-radius: 10px; border: 1px solid var(--border); }
+#s-cmi .insp-bar-row { display: flex; align-items: center; gap: 8px; font-size: 12px; margin-bottom: 6px; }
+#s-cmi .insp-bar-row:last-child { margin-bottom: 0; }
+#s-cmi .insp-track { flex: 1; height: 10px; background: #e2e8f0; border-radius: 6px; overflow: hidden; }
+#s-cmi .insp-fill-24 { height: 100%; background: #94a3b8; transition: width 0.3s ease; }
+#s-cmi .insp-fill-25 { height: 100%; background: var(--navy); transition: width 0.3s ease; }
+#s-cmi .insp-section { margin-bottom: 14px; }
+#s-cmi .insp-section h4 { font-size: 12px; text-transform: uppercase; color: var(--slate); letter-spacing: 0.4px; margin-bottom: 5px; border-bottom: 1px solid var(--border); padding-bottom: 3px; }
+#s-cmi .insp-section p { font-size: 13.5px; color: var(--text); }
+#s-cmi .formula-box { font-family: Consolas, monospace; font-size: 12px; background: #f1f5f9; padding: 8px 10px; border-radius: 6px; color: var(--navy); }
+#s-cmi .causal-link-box { background: #eff6ff; border-left: 3px solid var(--steel); padding: 9px 12px; border-radius: 6px; font-size: 12.5px; color: var(--navy); }
+#s-cmi .action-box { background: #fffbeb; border-left: 3px solid #d97706; padding: 10px 12px; border-radius: 6px; font-size: 13px; color: #78350f; }
+#s-cmi .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(460px,100%), 1fr)); gap: 18px; margin-top: 20px; }
+#s-cmi .info-box { background: var(--surface); border: 1px solid var(--border); border-left: 4px solid var(--navy); border-radius: 10px; padding: 18px 20px; }
+#s-cmi .info-box.alert { border-left-color: var(--accent); }
+#s-cmi .info-box h3 { font-size: 15.5px; color: var(--navy); margin-bottom: 10px; }
+#s-cmi .info-box ul { padding-left: 18px; font-size: 13px; color: var(--text); }
+#s-cmi .info-box li { margin-bottom: 7px; }
+#s-cmi footer { text-align: center; font-size: 12px; color: var(--muted); margin-top: 24px; padding-top: 14px; border-top: 1px solid var(--border); }
+#s-cmi .hidden { display: none !important; }
+
+/* Diseño adaptable: según el ancho disponible de la sección (no de la ventana),
+   porque el sidebar le resta espacio al contenido */
+@container (max-width: 1100px){
+  #s-cmi .workspace{grid-template-columns:1fr}
+  #s-cmi .inspector{position:static !important}
+}
+@container (max-width: 560px){
+  #s-cmi .grid-2{grid-template-columns:1fr}
+  #s-cmi .insp-metrics{grid-template-columns:1fr}
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════
+   SECCIÓN CSS 6 — CMI: ajustes para pantallas angostas (celular / tableta)
+   ═══════════════════════════════════════════════════════════════════════ */
+#s-cmi .workspace > *{min-width:0}
+#s-cmi .inspector{scroll-margin-top:72px}
+#s-cmi .insp-back{display:none;margin-bottom:12px;background:#eff6ff;border:1px solid var(--border);color:var(--slate);border-radius:8px;padding:8px 12px;font-weight:700;font-size:13px;cursor:pointer}
+@container (max-width: 1100px){
+  #s-cmi .insp-back{display:inline-flex}
+}
+@container (max-width: 640px){
+  #s-cmi header{padding:18px 16px}
+  #s-cmi header h1{font-size:19px}
+  #s-cmi .hint-pill{max-width:none}
+  #s-cmi .tabs{flex-wrap:nowrap;overflow-x:auto;width:100%;padding-bottom:6px;-webkit-overflow-scrolling:touch}
+  #s-cmi .tab-btn{flex:0 0 auto}
+  #s-cmi .search-input{width:100%;min-width:0}
+  #s-cmi .panel{padding:14px}
+  #s-cmi .inspector{padding:16px}
+  #s-cmi .causal-level{padding:12px}
+  #s-cmi .kpi-card .label{padding-right:0;padding-top:20px}
+  /* Tablas → tarjetas */
+  #s-cmi table,#s-cmi tbody{display:block}
+  #s-cmi thead{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+  #s-cmi tr.kpi-row{display:block;border:1px solid var(--border);border-radius:10px;padding:8px 12px;margin-bottom:10px;background:#fff}
+  #s-cmi tr.kpi-row td,#s-cmi tr.kpi-row.selected td,#s-cmi tr.kpi-row:hover td{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:5px 0;border:0;background:none;text-align:right;white-space:normal}
+  #s-cmi tr.kpi-row td::before{content:attr(data-label);flex:0 0 38%;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;color:var(--muted)}
+  #s-cmi tr.kpi-row.selected{background:#e0edff;border-color:#93c5fd}
+  #s-cmi tr.kpi-row:hover{border-color:var(--steel)}
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   SECCIÓN CSS 7 — ADAPTABLE A CELULAR Y TABLETA (toda la app)
+   ═══════════════════════════════════════════════════════════════════════ */
+body.in-cmi #resetTop,body.in-cmi .side-foot,body.in-cmi #badge{display:none}   /* Restablecer no aplica al CMI */
+.printwrap{position:relative}
+.pmenu{position:absolute;top:calc(100% + 6px);right:0;min-width:240px;background:#fff;border:1px solid var(--border);border-radius:10px;box-shadow:0 12px 32px rgba(0,0,0,.18);padding:6px;z-index:60}
+.pmenu[hidden]{display:none}
+.pmenu button{display:block;width:100%;text-align:left;background:none;border:0;border-radius:8px;padding:10px 12px;font:inherit;font-weight:700;font-size:14px;color:var(--text);cursor:pointer}
+.pmenu button:hover{background:#EAF2FD;color:var(--primary)}
+.pmenu small{display:block;font-weight:400;font-size:12px;color:#6b7684;margin-top:1px}
+.tw{-webkit-overflow-scrolling:touch}
+@media(max-width:960px){
+  .topbar{padding:10px 14px;gap:8px}
+  .topbar h1{font-size:17px}
+  .banner{padding:8px 14px;font-size:12px}
+  .sidebar{width:min(300px,86vw)}
+  .main{min-height:100dvh}
+  .mbody{max-height:70dvh}
+}
+@media(max-width:600px){
+  h2{font-size:22px}
+  .box{padding:12px}
+  .read,.ibox{padding:12px 14px}
+  .card .v{font-size:23px}
+  .cv{height:240px}
+  .mrow{grid-template-columns:1fr}
+  .sim{grid-template-columns:1fr}
+  th,td{padding:6px 8px;font-size:12.5px}
+  .chart-head{align-items:flex-start}
+  .plbl{display:none}
+  .printwrap{position:static}
+  .pmenu{left:12px;right:12px;top:calc(100% - 4px);min-width:0}
+}
+@media(pointer:coarse){
+  .btn,.hamb,.icon-btn,.csel{min-height:42px}
+  .navbtn{padding:13px 12px}
+  input[type=number],input[type=text],select{font-size:16px}
+  .sim input[type=range]{height:30px}
+  .pmenu button{padding:14px}
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   SECCIÓN CSS 8 — IMPRESIÓN
+   ═══════════════════════════════════════════════════════════════════════ */
+.print-only{display:none}
+.print-chart{display:none}
+body.print-all .sec{display:block}   /* informe completo: todas las secciones visibles para poder dibujar sus gráficos */
+@page{size:A4 landscape;margin:10mm}
+@media print{
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  html,body{background:#fff!important;font-size:12px}
+  .sidebar,.overlay,.hamb,#resetTop,.printwrap,.no-print,dialog#modal{display:none!important}
+  .main{margin-left:0!important;min-height:0}
+  .topbar{position:static;border:0;padding:0 0 6px;background:none}
+  .topbar h1{font-size:18px}
+  .banner{padding:4px 0;background:none;border-bottom:1px solid var(--border)}
+  .print-only{display:block;font-size:11px;color:#5b6673;margin:4px 0 10px}
+  main#view{padding:8px 0 0;max-width:none}
+  body.print-all .sec{display:block}
+  body.print-all .sec + .sec{break-before:page}
+  .card,.box,.read,.ibox,.chart-head,.eq,tr{break-inside:avoid}
+  h2,h3,h4{break-after:avoid}
+  .card:hover{box-shadow:none}
+  .tw{overflow:visible}
+  table{font-size:10.5px}
+  th,td{white-space:normal;padding:4px 6px}
+  .cv{height:230px}
+  .cv canvas{display:none!important}
+  .print-chart{display:block;width:100%;height:100%;object-fit:contain}
+  .csel{border:0;background:none;-webkit-appearance:none;appearance:none;font-weight:700;padding:0}
+  /* CMI */
+  #s-cmi .controls,#s-cmi .click-badge,#s-cmi .hint-pill,#s-cmi .insp-back{display:none!important}
+  #s-cmi .perspective-section.hidden{display:block!important}
+  #s-cmi .workspace{grid-template-columns:1fr}
+  #s-cmi .inspector{position:static!important;box-shadow:none}
+  #s-cmi header{box-shadow:none;padding:14px 18px}
+  #s-cmi .causal-level,#s-cmi .info-box,#s-cmi .kpi-card,#s-cmi .inspector,#s-cmi tr.kpi-row{break-inside:avoid}
+  #s-cmi .kpi-card:hover,#s-cmi .c-node:hover{transform:none;box-shadow:none}
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════════════════════════
+     BARRA LATERAL
+     ══════════════════════════════════════════════════════════════════════ -->
+<aside class="sidebar" role="navigation" aria-label="Secciones del análisis">
+  <div class="side-head">
+
+    <!-- ╔════════════════════════════════════════════════════════════╗
+         ║  LOGO DE LA EMPRESA — CÓMO PERSONALIZARLO                 ║
+         ╠════════════════════════════════════════════════════════════╣
+         ║                                                            ║
+         ║  Por defecto se muestra el monograma "AA" (texto).        ║
+         ║                                                            ║
+         ║  PARA REEMPLAZARLO POR TU IMAGEN JPG/PNG:                 ║
+         ║                                                            ║
+         ║  1. Copia tu archivo a la misma carpeta del index.html    ║
+         ║     (ejemplo: logo-aceros.jpg).                           ║
+         ║                                                            ║
+         ║  2. En el bloque de abajo, COMENTA la línea:              ║
+         ║        <span class="logo-text">AA</span>                  ║
+         ║     y DESCOMENTA la línea:                                ║
+         ║        <img src="logo-aceros.jpg" alt="Aceros Arequipa">  ║
+         ║                                                            ║
+         ║  3. Guarda y recarga la página. Listo.                    ║
+         ║                                                            ║
+         ║  SI EL LOGO ES HORIZONTAL (más ancho que alto):           ║
+         ║     En el CSS, busca la regla ".logo img" y cambia        ║
+         ║        object-fit:cover  →  object-fit:contain            ║
+         ║                                                            ║
+         ║  TAMAÑO RECOMENDADO: 76×76 px (o cuadrada)                ║
+         ╚════════════════════════════════════════════════════════════╝ -->
+    <div class="logo" aria-label="Logo de Aceros Arequipa">
+      <span class="logo-text">AA</span>
+      <!-- <img src="logo-aceros.jpg" alt="Aceros Arequipa"> -->
+    </div>
+
+    <div class="side-title">
+      <strong>Aceros Arequipa</strong>
+      <span>Análisis financiero 2025</span>
+    </div>
+
+    <!-- Botón COLAPSAR/EXPANDIR. Su texto cambia por JS: « ↔ » -->
+    <button class="icon-btn" id="collapse" aria-label="Colapsar o expandir menú">«</button>
+  </div>
+
+  <div id="nav"></div>
+
+  <div class="side-foot">
+    <button id="resetSide" type="button">↺ <span class="lbl">Restablecer datos</span></button>
+  </div>
+</aside>
+<div class="overlay" id="ov"></div>
+
+<!-- ══════════════════════════════════════════════════════════════════════
+     ÁREA PRINCIPAL
+     ══════════════════════════════════════════════════════════════════════ -->
+<div class="main">
+  <header class="topbar">
+    <button class="hamb" id="hamb" aria-label="Abrir menú">☰</button>
+    <h1 id="hTitle">Análisis horizontal y vertical</h1>
+    <span id="badge" class="badge">Datos 2025</span>
+    <button class="btn" id="resetTop" type="button">↺ Restablecer</button>
+    <div class="printwrap">
+      <button class="btn" id="printBtn" type="button" aria-haspopup="true" aria-expanded="false">🖨 <span class="plbl">Imprimir</span> ▾</button>
+      <div class="pmenu" id="printMenu" hidden>
+        <button type="button" data-print="section">Esta sección<small>Solo lo que estás viendo</small></button>
+        <button type="button" data-print="all">Informe completo<small>Todas las secciones, una tras otra</small></button>
+      </div>
+    </div>
+  </header>
+  <div class="banner">CORPORACION ACEROS AREQUIPA S.A. · Estados financieros individuales · 2025 vs 2024 · Miles de soles (S/ mil)</div>
+  <div class="print-only" id="printMeta"></div>
+  <main id="view">
+    <section id="s-av" class="sec on"></section>
+    <section id="s-dp" class="sec"></section>
+    <section id="s-ct" class="sec"></section>
+    <section id="s-lq" class="sec"></section>
+    <section id="s-gs" class="sec"></section>
+    <section id="s-sv" class="sec"></section>
+    <section id="s-db" class="sec"></section>
+    <!-- ═══ CUADRO DE MANDO INTEGRAL (CMI) ═══ -->
+    <section id="s-cmi" class="sec">
+<div class="container">
+  <header>
+    <div>
+      <div class="tag">Balanced Scorecard & Mapa Estratégico · EEFF Individuales 2024–2025</div>
+      <h1>Cuadro de Mando Integral (CMI) — Corporación Aceros Arequipa S.A.</h1>
+      <p>Cifras en miles de soles (S/ mil), ratios y días (base comercial 360 días). Fuente exclusiva: <strong>REPORTE EEFF ACEROS AREQUIPA.xlsx</strong>.</p>
+    </div>
+    <div class="hint-pill">
+      <strong>Tablero Interactivo:</strong> Haz clic en cualquier <strong>tarjeta</strong>, <strong>nodo de la Cadena Causal</strong> o <strong>fila de indicador</strong> para ver su diagnóstico y efecto en la creación de valor.
+    </div>
+  </header>
+
+  <!-- TARJETAS SUPERIORES CLICABLES -->
+  <section class="kpi-strip">
+    <div class="kpi-card selected" data-id="card_ingresos" onclick="selectItem('card_ingresos')">
+      <span class="click-badge">Interpretar</span>
+      <div class="label">Ingresos Ordinarios 2025</div>
+      <div class="val">S/ 4,750,922</div>
+      <div class="delta pos">+8.7% vs. 2024 (S/ 4,369,096)</div>
+    </div>
+    <div class="kpi-card" data-id="card_utilidad" onclick="selectItem('card_utilidad')">
+      <span class="click-badge">Interpretar</span>
+      <div class="label">Utilidad Neta 2025</div>
+      <div class="val">S/ 295,928</div>
+      <div class="delta pos">+50.6% vs. 2024 (S/ 196,493)</div>
+    </div>
+    <div class="kpi-card" data-id="card_roe" onclick="selectItem('card_roe')">
+      <span class="click-badge">Interpretar</span>
+      <div class="label">ROE (Puntual / Promedio)</div>
+      <div class="val">9.8% / 10.1%</div>
+      <div class="delta pos">+2.8 pp vs. 2024 (7.0%)</div>
+    </div>
+    <div class="kpi-card" data-id="card_cce" onclick="selectItem('card_cce')">
+      <span class="click-badge">Interpretar</span>
+      <div class="label">Ciclo Conversión Efectivo</div>
+      <div class="val">83.8 días</div>
+      <div class="delta pos">-22.5 días vs. 2024 (106.3 días)</div>
+    </div>
+    <div class="kpi-card" data-id="card_deuda" onclick="selectItem('card_deuda')">
+      <span class="click-badge">Interpretar</span>
+      <div class="label">Endeudamiento Total</div>
+      <div class="val">47.8%</div>
+      <div class="delta pos">-3.7 pp vs. 2024 (51.5%)</div>
+    </div>
+  </section>
+
+  <!-- WORKSPACE DIVIDIDO -->
+  <div class="workspace">
+    <div>
+      <div class="controls">
+        <div class="tabs">
+          <button class="tab-btn active" onclick="filterPerspective('all', this)">Vista Completa</button>
+          <button class="tab-btn" onclick="filterPerspective('causal', this)">Mapa Causal (4 Niveles)</button>
+          <button class="tab-btn" onclick="filterPerspective('financiera', this)">1. Financiera</button>
+          <button class="tab-btn" onclick="filterPerspective('clientes', this)">2. Clientes</button>
+          <button class="tab-btn" onclick="filterPerspective('procesos', this)">3. Procesos</button>
+          <button class="tab-btn" onclick="filterPerspective('aprendizaje', this)">4. Aprendizaje</button>
+        </div>
+        <input type="text" class="search-input" id="searchInput" placeholder="Buscar KPI o cuenta..." oninput="searchKPIs()">
+      </div>
+
+      <!-- SECCION VISUAL: CADENA CAUSAL DE 4 NIVELES -->
+      <section class="panel perspective-section" data-perspective="causal">
+        <div class="panel-header">
+          <h2>Mapa Estratégico: Cadena Causal de 4 Niveles (2024 → 2025)</h2>
+          <span>Lectura de abajo hacia arriba (Causa → Efecto Final) · Haz clic en cada nodo</span>
+        </div>
+        <div class="causal-intro">
+          <strong>Lógica del CMI (Kaplan & Norton):</strong> El <strong>ROE (9.8%)</strong> no se gestiona directamente; es el <em>efecto final</em> de calibrar los tres niveles inductores inferiores. Haz clic en cualquier nodo para auditar cómo cada eslabón impulsó (o frenó) el valor en 2025.
+        </div>
+
+        <div class="causal-stack">
+          <!-- NIVEL 4 (EFECTO FINAL): FINANCIERA -->
+          <div class="causal-level lvl-fin">
+            <div class="causal-level-top">
+              <span class="lvl-tag">Nivel 4 · Perspectiva Financiera (El Destino / Efecto Final)</span>
+              <span class="badge b-green">Resultado Validado</span>
+            </div>
+            <div class="causal-hypothesis">
+              <strong>Efecto Final:</strong> La mayor velocidad comercial y liberación de caja operativas elevan la rentabilidad y reducen deuda, enriqueciendo al accionista.
+            </div>
+            <div class="causal-nodes">
+              <div class="c-node" data-id="card_roe" onclick="selectItem('card_roe')">
+                <div>
+                  <div class="cn-name">ROE (Retorno Patrimonio)</div>
+                  <div class="cn-sub">DuPont: 6.23% × 0.82x × 1.92x</div>
+                </div>
+                <div class="cn-val pos">9.8%<br><span style="font-size:11px;">+2.8 pp</span></div>
+              </div>
+              <div class="c-node" data-id="card_utilidad" onclick="selectItem('card_utilidad')">
+                <div>
+                  <div class="cn-name">Utilidad Neta 2025</div>
+                  <div class="cn-sub">S/ 196,493 → S/ 295,928 mil</div>
+                </div>
+                <div class="cn-val pos">+50.6%<br><span style="font-size:11px;">+S/ 99.4M</span></div>
+              </div>
+              <div class="c-node" data-id="card_deuda" onclick="selectItem('card_deuda')">
+                <div>
+                  <div class="cn-name">Endeudamiento Total</div>
+                  <div class="cn-sub">Amortización S/ 353.3M deuda</div>
+                </div>
+                <div class="cn-val pos">47.8%<br><span style="font-size:11px;">-3.7 pp</span></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="causal-arrow"><span>▲ IMPULSA EL DESTINO FINANCIERO (Efecto 2 → Efecto Final) ▲</span></div>
+
+          <!-- NIVEL 3 (EFECTO 2): CLIENTES -->
+          <div class="causal-level lvl-cli">
+            <div class="causal-level-top">
+              <span class="lvl-tag">Nivel 3 · Perspectiva de Clientes (El Velocímetro / Efecto 2)</span>
+              <span class="badge b-green">Tracción Comercial</span>
+            </div>
+            <div class="causal-hypothesis">
+              <strong>Si entregamos a tiempo con procesos ágiles:</strong> Entonces expandimos ventas sin sacrificar precio ni relajar cobranzas.
+            </div>
+            <div class="causal-nodes">
+              <div class="c-node selected" data-id="card_ingresos" onclick="selectItem('card_ingresos')">
+                <div>
+                  <div class="cn-name">Crecimiento Ingresos</div>
+                  <div class="cn-sub">Margen bruto intacto en 14.3%</div>
+                </div>
+                <div class="cn-val pos">+8.7%<br><span style="font-size:11px;">S/ 4,750.9M</span></div>
+              </div>
+              <div class="c-node" data-id="cli_dso" onclick="selectItem('cli_dso')">
+                <div>
+                  <div class="cn-name">Período Medio Cobro (DSO)</div>
+                  <div class="cn-sub">36.4 días → 32.5 días</div>
+                </div>
+                <div class="cn-val pos">-4.0 días<br><span style="font-size:11px;">Cobro ágil</span></div>
+              </div>
+              <div class="c-node" data-id="cli_gventas" onclick="selectItem('cli_gventas')">
+                <div>
+                  <div class="cn-name">Gastos Ventas / Ingresos</div>
+                  <div class="cn-sub">Eficiencia logística y comercial</div>
+                </div>
+                <div class="cn-val pos">3.0%<br><span style="font-size:11px;">-0.1 pp</span></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="causal-arrow"><span>▲ GENERA CONFIANZA Y VELOCIDAD COMERCIAL (Efecto 1 → Efecto 2) ▲</span></div>
+
+          <!-- NIVEL 2 (EFECTO 1): PROCESOS INTERNOS -->
+          <div class="causal-level lvl-proc">
+            <div class="causal-level-top">
+              <span class="lvl-tag">Nivel 2 · Perspectiva Procesos Internos (El Motor / Efecto 1)</span>
+              <span class="badge b-green">Alta Eficiencia Operativa</span>
+            </div>
+            <div class="causal-hypothesis">
+              <strong>Si optimizamos la cadena suministro y planta:</strong> Entonces reducimos inventarios ociosos y liberamos efectivo operativo.
+            </div>
+            <div class="causal-nodes">
+              <div class="c-node" data-id="proc_dio" onclick="selectItem('proc_dio')">
+                <div>
+                  <div class="cn-name">Días de Inventario (DIO)</div>
+                  <div class="cn-sub">114.8 días → 96.7 días</div>
+                </div>
+                <div class="cn-val pos">-18.1 días<br><span style="font-size:11px;">-S/ 100.5M</span></div>
+              </div>
+              <div class="c-node" data-id="card_cce" onclick="selectItem('card_cce')">
+                <div>
+                  <div class="cn-name">Ciclo Conversión Efectivo</div>
+                  <div class="cn-sub">Libera S/ 159,918 mil en KTNO</div>
+                </div>
+                <div class="cn-val pos">83.8 días<br><span style="font-size:11px;">-22.5 días</span></div>
+              </div>
+              <div class="c-node" data-id="proc_rotact" onclick="selectItem('proc_rotact')">
+                <div>
+                  <div class="cn-name">Rotación de Activos</div>
+                  <div class="cn-sub">Mayor uso capacidad instalada</div>
+                </div>
+                <div class="cn-val pos">0.82x<br><span style="font-size:11px;">+0.07x</span></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="causal-arrow"><span>▲ IMPULSA EL MOTOR OPERATIVO (Causa Inicial → Efecto 1) ▲</span></div>
+
+          <!-- NIVEL 1 (CAUSA INICIAL): APRENDIZAJE Y CRECIMIENTO -->
+          <div class="causal-level lvl-apr">
+            <div class="causal-level-top">
+              <span class="lvl-tag">Nivel 1 · Aprendizaje y Crecimiento (El Combustible / Causa Inicial)</span>
+              <span class="badge b-amber">Foco Mixto: 1 Alerta + 2 Fortalezas</span>
+            </div>
+            <div class="causal-hypothesis">
+              <strong>Causa Raíz:</strong> La expansión de subsidiarias (+28%) y reinversión (+13.6%) sostienen el crecimiento, pero el alza administrativa (+20.1%) presiona el margen operativo.
+            </div>
+            <div class="causal-nodes">
+              <div class="c-node" data-id="apr_admin" onclick="selectItem('apr_admin')">
+                <div>
+                  <div class="cn-name">Peso Gasto Administrativo</div>
+                  <div class="cn-sub">Subió +20.1% (resta 0.25 pp EBIT)</div>
+                </div>
+                <div class="cn-val neg">2.7%<br><span style="font-size:11px;">+0.3 pp</span></div>
+              </div>
+              <div class="c-node" data-id="apr_intang" onclick="selectItem('apr_intang')">
+                <div>
+                  <div class="cn-name">Intangibles / Tecnología</div>
+                  <div class="cn-sub">S/ 5,400 → S/ 2,290 mil</div>
+                </div>
+                <div class="cn-val warn">-57.6%<br><span style="font-size:11px;">Vigilar TI</span></div>
+              </div>
+              <div class="c-node" data-id="apr_subs" onclick="selectItem('apr_subs')">
+                <div>
+                  <div class="cn-name">Inversión Subsidiarias</div>
+                  <div class="cn-sub">Aporte +S/ 65,223 mil en 2025</div>
+                </div>
+                <div class="cn-val pos">+28.0%<br><span style="font-size:11px;">S/ 301.1M</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- PERSPECTIVA 1: FINANCIERA -->
+      <section class="panel perspective-section" data-perspective="financiera">
+        <div class="panel-header">
+          <h2>1. Perspectiva Financiera — Rentabilidad, Liquidez y Solvencia</h2>
+          <span>Clic en una fila para interpretar</span>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Objetivo Estratégico</th>
+              <th>Indicador (KPI)</th>
+              <th class="num">2024</th>
+              <th class="num">2025</th>
+              <th class="num">Variación</th>
+              <th class="center">Estado</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="kpi-row" data-id="card_roe" onclick="selectItem('card_roe')">
+              <td>Maximizar retorno al accionista</td>
+              <td><strong>ROE (Retorno sobre Patrimonio)</strong></td>
+              <td class="num">7.0%</td>
+              <td class="num"><strong>9.8%</strong></td>
+              <td class="num pos">+2.8 pp</td>
+              <td class="center"><span class="badge b-green">Óptimo</span></td>
+            </tr>
+            <tr class="kpi-row" data-id="fin_roa" onclick="selectItem('fin_roa')">
+              <td>Rentabilizar la base de activos</td>
+              <td><strong>ROA (Retorno sobre Activos)</strong></td>
+              <td class="num">3.4%</td>
+              <td class="num"><strong>5.1%</strong></td>
+              <td class="num pos">+1.7 pp</td>
+              <td class="center"><span class="badge b-green">Óptimo</span></td>
+            </tr>
+            <tr class="kpi-row" data-id="fin_mneto" onclick="selectItem('fin_mneto')">
+              <td>Expandir margen neto final</td>
+              <td><strong>Margen Neto</strong></td>
+              <td class="num">4.5%</td>
+              <td class="num"><strong>6.2%</strong></td>
+              <td class="num pos">+1.7 pp</td>
+              <td class="center"><span class="badge b-green">Óptimo</span></td>
+            </tr>
+            <tr class="kpi-row" data-id="fin_mop" onclick="selectItem('fin_mop')">
+              <td>Sostener margen del negocio core</td>
+              <td><strong>Margen Operativo (EBIT)</strong></td>
+              <td class="num">8.7%</td>
+              <td class="num"><strong>8.4%</strong></td>
+              <td class="num warn">-0.3 pp</td>
+              <td class="center"><span class="badge b-amber">Vigilancia</span></td>
+            </tr>
+            <tr class="kpi-row" data-id="fin_mbruto" onclick="selectItem('fin_mbruto')">
+              <td>Preservar margen industrial</td>
+              <td><strong>Margen Bruto</strong></td>
+              <td class="num">14.3%</td>
+              <td class="num"><strong>14.3%</strong></td>
+              <td class="num">0.0 pp</td>
+              <td class="center"><span class="badge b-green">Estable</span></td>
+            </tr>
+            <tr class="kpi-row" data-id="fin_liq" onclick="selectItem('fin_liq')">
+              <td>Fortalecer liquidez de corto plazo</td>
+              <td><strong>Razón Corriente / Prueba Ácida</strong></td>
+              <td class="num">1.32x / 0.66x</td>
+              <td class="num"><strong>1.42x / 0.75x</strong></td>
+              <td class="num pos">+0.10x</td>
+              <td class="center"><span class="badge b-green">Óptimo</span></td>
+            </tr>
+            <tr class="kpi-row" data-id="card_deuda" onclick="selectItem('card_deuda')">
+              <td>Optimizar apalancamiento</td>
+              <td><strong>Endeudamiento Total</strong></td>
+              <td class="num">51.5%</td>
+              <td class="num"><strong>47.8%</strong></td>
+              <td class="num pos">-3.7 pp</td>
+              <td class="center"><span class="badge b-green">En Rango</span></td>
+            </tr>
+            <tr class="kpi-row" data-id="fin_cob" onclick="selectItem('fin_cob')">
+              <td>Blindar servicio de deuda</td>
+              <td><strong>Cobertura de Intereses</strong></td>
+              <td class="num">3.19x</td>
+              <td class="num"><strong>3.72x</strong></td>
+              <td class="num pos">+0.53x</td>
+              <td class="center"><span class="badge b-green">Óptimo</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- PERSPECTIVA 2: CLIENTES -->
+      <section class="panel perspective-section" data-perspective="clientes">
+        <div class="panel-header">
+          <h2>2. Perspectiva de Clientes — Crecimiento y Disciplina Comercial</h2>
+          <span><span class="badge b-proxy">Proxies Contables</span></span>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Objetivo Estratégico</th>
+              <th>Indicador (KPI)</th>
+              <th class="num">2024</th>
+              <th class="num">2025</th>
+              <th class="num">Variación</th>
+              <th class="center">Estado</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="kpi-row selected" data-id="card_ingresos" onclick="selectItem('card_ingresos')">
+              <td>Acelerar penetración comercial</td>
+              <td><strong>Crecimiento de Ingresos</strong></td>
+              <td class="num">S/ 4,369,096</td>
+              <td class="num"><strong>S/ 4,750,922</strong></td>
+              <td class="num pos">+8.7%</td>
+              <td class="center"><span class="badge b-green">Óptimo</span></td>
+            </tr>
+            <tr class="kpi-row" data-id="cli_dso" onclick="selectItem('cli_dso')">
+              <td>Agilizar recaudo comercial</td>
+              <td><strong>Período Medio de Cobro (DSO)</strong></td>
+              <td class="num">36.4 días</td>
+              <td class="num"><strong>32.5 días</strong></td>
+              <td class="num pos">-4.0 días</td>
+              <td class="center"><span class="badge b-green">Óptimo</span></td>
+            </tr>
+            <tr class="kpi-row" data-id="cli_cartera" onclick="selectItem('cli_cartera')">
+              <td>Controlar exposición crediticia</td>
+              <td><strong>Peso de Cartera Comercial</strong></td>
+              <td class="num">10.1%</td>
+              <td class="num"><strong>9.0%</strong></td>
+              <td class="num pos">-1.1 pp</td>
+              <td class="center"><span class="badge b-green">Óptimo</span></td>
+            </tr>
+            <tr class="kpi-row" data-id="cli_gventas" onclick="selectItem('cli_gventas')">
+              <td>Eficiencia comercial y logística</td>
+              <td><strong>Gastos de Ventas / Ingresos</strong></td>
+              <td class="num">3.2%</td>
+              <td class="num"><strong>3.0%</strong></td>
+              <td class="num pos">-0.1 pp</td>
+              <td class="center"><span class="badge b-green">Óptimo</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- PERSPECTIVA 3: PROCESOS INTERNOS -->
+      <section class="panel perspective-section" data-perspective="procesos">
+        <div class="panel-header">
+          <h2>3. Perspectiva de Procesos Internos — Eficiencia y Capital de Trabajo</h2>
+          <span>Base comercial 360 días</span>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Objetivo Estratégico</th>
+              <th>Indicador (KPI)</th>
+              <th class="num">2024</th>
+              <th class="num">2025</th>
+              <th class="num">Variación</th>
+              <th class="center">Estado</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="kpi-row" data-id="proc_dio" onclick="selectItem('proc_dio')">
+              <td>Acelerar rotación de inventarios</td>
+              <td><strong>Días de Inventario (DIO)</strong></td>
+              <td class="num">114.8 días</td>
+              <td class="num"><strong>96.7 días</strong></td>
+              <td class="num pos">-18.1 días</td>
+              <td class="center"><span class="badge b-green">Óptimo</span></td>
+            </tr>
+            <tr class="kpi-row" data-id="proc_dpo" onclick="selectItem('proc_dpo')">
+              <td>Optimizar plazo con proveedores</td>
+              <td><strong>Días de Pago (DPO)</strong></td>
+              <td class="num">44.9 días</td>
+              <td class="num"><strong>45.3 días</strong></td>
+              <td class="num pos">+0.4 días</td>
+              <td class="center"><span class="badge b-green">Estable</span></td>
+            </tr>
+            <tr class="kpi-row" data-id="card_cce" onclick="selectItem('card_cce')">
+              <td>Reducir ciclo de caja operativa</td>
+              <td><strong>Ciclo de Conversión de Efectivo</strong></td>
+              <td class="num">106.3 días</td>
+              <td class="num"><strong>83.8 días</strong></td>
+              <td class="num pos">-22.5 días</td>
+              <td class="center"><span class="badge b-green">Óptimo</span></td>
+            </tr>
+            <tr class="kpi-row" data-id="proc_ktno" onclick="selectItem('proc_ktno')">
+              <td>Liberar capital inmovilizado</td>
+              <td><strong>KTNO (Capital Trabajo Operativo)</strong></td>
+              <td class="num">S/ 1,168,284</td>
+              <td class="num"><strong>S/ 1,008,366</strong></td>
+              <td class="num pos">-13.7%</td>
+              <td class="center"><span class="badge b-green">Óptimo</span></td>
+            </tr>
+            <tr class="kpi-row" data-id="proc_rotact" onclick="selectItem('proc_rotact')">
+              <td>Maximizar productividad de activos</td>
+              <td><strong>Rotación de Activos Totales</strong></td>
+              <td class="num">0.75x</td>
+              <td class="num"><strong>0.82x</strong></td>
+              <td class="num pos">+0.07x</td>
+              <td class="center"><span class="badge b-green">Óptimo</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- PERSPECTIVA 4: APRENDIZAJE Y CRECIMIENTO -->
+      <section class="panel perspective-section" data-perspective="aprendizaje">
+        <div class="panel-header">
+          <h2>4. Perspectiva de Aprendizaje, Innovación y Crecimiento</h2>
+          <span><span class="badge b-proxy">Proxies Contables</span></span>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Objetivo Estratégico</th>
+              <th>Indicador (KPI)</th>
+              <th class="num">2024</th>
+              <th class="num">2025</th>
+              <th class="num">Variación</th>
+              <th class="center">Estado</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="kpi-row" data-id="apr_admin" onclick="selectItem('apr_admin')">
+              <td>Eficiencia de estructura soporte</td>
+              <td><strong>Peso Gasto Administrativo</strong></td>
+              <td class="num">2.4%</td>
+              <td class="num"><strong>2.7%</strong></td>
+              <td class="num neg">+0.3 pp</td>
+              <td class="center"><span class="badge b-red">Alerta</span></td>
+            </tr>
+            <tr class="kpi-row" data-id="apr_intang" onclick="selectItem('apr_intang')">
+              <td>Renovar base tecnológica/software</td>
+              <td><strong>Activos Intangibles Netos</strong></td>
+              <td class="num">S/ 5,400</td>
+              <td class="num"><strong>S/ 2,290</strong></td>
+              <td class="num neg">-57.6%</td>
+              <td class="center"><span class="badge b-amber">Vigilancia</span></td>
+            </tr>
+            <tr class="kpi-row" data-id="apr_subs" onclick="selectItem('apr_subs')">
+              <td>Expandir ecosistema corporativo</td>
+              <td><strong>Inversiones en Subsidiarias</strong></td>
+              <td class="num">S/ 235,298</td>
+              <td class="num"><strong>S/ 301,112</strong></td>
+              <td class="num pos">+28.0%</td>
+              <td class="center"><span class="badge b-green">Óptimo</span></td>
+            </tr>
+            <tr class="kpi-row" data-id="apr_reten" onclick="selectItem('apr_reten')">
+              <td>Reinvertir utilidades para crecer</td>
+              <td><strong>Resultados Acumulados</strong></td>
+              <td class="num">S/ 1,385,475</td>
+              <td class="num"><strong>S/ 1,574,463</strong></td>
+              <td class="num pos">+13.6%</td>
+              <td class="center"><span class="badge b-green">Óptimo</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+    </div>
+
+    <!-- PANEL DERECHO: INTERPRETE DINAMICO -->
+    <aside class="inspector" id="inspectorPanel">
+      <button type="button" class="insp-back" onclick="cmiBack()">↑ Volver al tablero</button>
+      <div class="inspector-top">
+        <span class="inspector-persp" id="inspPersp">Perspectiva Clientes / Crecimiento</span>
+        <span class="badge b-green" id="inspBadge">Óptimo</span>
+      </div>
+      <h3 id="inspTitle">Ingresos de Actividades Ordinarias</h3>
+
+      <div class="insp-metrics">
+        <div>
+          <div class="m-lbl">Real 2024</div>
+          <div class="m-val" id="insp2024">S/ 4,369,096</div>
+        </div>
+        <div>
+          <div class="m-lbl">Real 2025</div>
+          <div class="m-val" id="insp2025">S/ 4,750,922</div>
+        </div>
+        <div>
+          <div class="m-lbl">Variación</div>
+          <div class="m-val pos" id="inspVar">+8.7%</div>
+        </div>
+      </div>
+
+      <div class="insp-bar-box">
+        <div class="insp-bar-row">
+          <span style="width:34px;font-weight:700;color:#64748b;">2024</span>
+          <div class="insp-track"><div class="insp-fill-24" id="inspBar24" style="width:87.4%"></div></div>
+        </div>
+        <div class="insp-bar-row">
+          <span style="width:34px;font-weight:700;color:#0f2537;">2025</span>
+          <div class="insp-track"><div class="insp-fill-25" id="inspBar25" style="width:95.0%"></div></div>
+        </div>
+      </div>
+
+      <div class="insp-section">
+        <h4>Fórmula y Cuentas del Excel</h4>
+        <div class="formula-box" id="inspFormula">(Ventas 2025 / Ventas 2024) - 1 | Nota 22 (Fila 57)</div>
+      </div>
+
+      <div class="insp-section">
+        <h4>Conexión en la Cadena Causal</h4>
+        <div class="causal-link-box" id="inspCausal"><strong>Efecto 2 → Efecto Final:</strong> Es impulsado por una entrega ágil (DIO -18.1 días) y transmite +S/ 381,826 mil de ventas al nivel Financiero sin sacrificar margen bruto (14.3%).</div>
+      </div>
+
+      <div class="insp-section">
+        <h4>Interpretación Financiera y Contable</h4>
+        <p id="inspInterp">Las ventas crecieron en S/ 381,826 mil (+8.7%) en 2025. Lo más destacable es la calidad del crecimiento: se mantuvo intacto el margen bruto en 14.3% y las cuentas por cobrar comerciales disminuyeron 3.1%, confirmando ventas cobradas en efectivo y no infladas por crédito blando.</p>
+      </div>
+
+      <div class="insp-section">
+        <h4>Implicancia Estratégica</h4>
+        <div class="action-box" id="inspAction">Desagregar en reportes internos cuánto del +8.7% provino de mayor volumen despachado (toneladas) frente a recuperación de precios internacionales del acero.</div>
+      </div>
+    </aside>
+  </div>
+
+  <!-- AUDITORIA Y BRECHAS -->
+  <div class="grid-2">
+    <div class="info-box alert">
+      <h3>Correcciones de Auditoría Aplicadas al Excel</h3>
+      <ul>
+        <li><strong>Divisor erróneo en márgenes:</strong> En la hoja <code>ratios de solvencia y rentabili</code>, las celdas <code>M6</code>, <code>M11</code> y <code>M16</code> dividen entre <em>Costo de Ventas</em> (S/ 4,069,959) en lugar de <em>Ventas Netas</em> (S/ 4,750,922). Este tablero muestra los márgenes reales sobre ventas.</li>
+        <li><strong>Signo de subsidiarias 2024:</strong> En el Estado de Resultados 2024, <em>Otros Ingresos (Gastos) de Subsidiarias</em> figura como <code>10,368</code> positivo, pero aritméticamente restó <strong>-S/ 10,368 mil</strong> para cuadrar la Utilidad antes de Impuestos de S/ 283,251 mil.</li>
+        <li><strong>Plantillas sin cálculo:</strong> <code>ratios de liquidez</code> y <code>ratios de gestion</code> carecen de valores calculados; todos los ratios de liquidez y ciclo de efectivo aquí mostrados fueron calculados desde los EEFF.</li>
+      </ul>
+    </div>
+    <div class="info-box">
+      <h3>Datos Inexistentes en el Excel (Espejo Retrovisor vs. Parabrisas)</h3>
+      <ul>
+        <li><strong>Notas explicativas (Notas 5 a 32):</strong> Se referencian en el Balance y Estado de Resultados, pero las hojas con el desglose (antigüedad de cartera, tasas de deuda, detalle de intangibles y CAPEX) no están en el archivo.</li>
+        <li><strong>Perspectiva Clientes:</strong> No existen encuestas NPS, tasa de retención, reclamos, volumen en toneladas ni desglose real contado vs. crédito (solo una nota manual de "75% contado / 25% crédito" sin sustento).</li>
+        <li><strong>Perspectiva Procesos y Aprendizaje:</strong> No hay datos operativos de planta (OEE, % defectos, tiempo de ciclo) ni indicadores humanos (horas de capacitación, rotación de personal, clima laboral).</li>
+      </ul>
+    </div>
+  </div>
+
+  <footer>
+    Cuadro de Mando Integral Interactivo (v3) · Generado exclusivamente sobre <strong>REPORTE EEFF ACEROS AREQUIPA.xlsx</strong> (EEFF Individuales 2024–2025).
+  </footer>
+</div>
+    </section>
+  </main>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════════
+     MODAL
+     ══════════════════════════════════════════════════════════════════════ -->
+<dialog id="modal" aria-labelledby="mtitle">
+  <div class="mhead"><h3 id="mtitle">Detalle</h3><button id="mx" type="button" aria-label="Cerrar">✕</button></div>
+  <div class="mbody" id="mbody"></div>
+  <div class="mfoot"><button class="btn" id="mc" type="button">Cerrar</button></div>
+</dialog>
+
+<script>
+"use strict";
+
+/* ═══════════════════════════════════════════════════════════════════════
+   SECCIÓN JS 1 — DATOS FUENTE (ÚNICA VERDAD)
+   ═══════════════════════════════════════════════════════════════════════
+   Si quieres cambiar los montos, edita D25 y D24.
+   NOTA: sb 2024 = -10 368 (gasto neto en subsidiarias) para que la
+   utilidad neta 2024 cuadre en S/ 196 493 mil.
+   ═══════════════════════════════════════════════════════════════════════ */
+const D25 = {
+  efe:609389,cxc:428345,cxcr:137183,ocxc:54410,ant:7087,inv:1092671,aig:0,
+  oaf:10930,sub:301112,cxcr2:45525,ocxc2:29,pinv:16402,ppe:3032246,int:2290,oanf:33874,
+  ofc:901900,cxp:512650,cxpr:50041,ocxp:172252,pig:5681,
+  ofl:871074,ocxpl:0,pid:245659,
+  cap:890858,ai:182408,orc:179066,ra:1574463,orp:185441,
+  ing:4750922,cv:4069959,gv:144583,ga:126840,oio:21793,ogo:33898,
+  ifn:28344,gf:106879,sb:65223,dc:11850,imp:100045
+};
+const D24 = {
+  efe:464460,cxc:442125,cxcr:174363,ocxc:78164,ant:8066,inv:1193199,aig:28558,
+  oaf:22675,sub:235298,cxcr2:12341,ocxc2:10509,pinv:18155,ppe:3085581,int:5400,oanf:34239,
+  ofc:1184336,cxp:467040,cxpr:35981,ocxp:123310,pig:0,
+  ofl:941945,ocxpl:9202,pid:230204,
+  cap:890858,ai:182408,orc:178927,ra:1385475,orp:183447,
+  ing:4369096,cv:3742639,gv:138828,ga:105610,oio:15129,ogo:17180,
+  ifn:31556,gf:119103,sb:-10368,dc:1198,imp:86758
+};
+const ORIG = { y2025:{...D25}, y2024:{...D24} };
+
+/* ═══════════════════════════════════════════════════════════════════════
+   SECCIÓN JS 2 — ESTADO GLOBAL
+   ═══════════════════════════════════════════════════════════════════════ */
+let S   = {...D25};
+let PCR = 25;
+let c25,c24,r25,r24;
+const CHARTS = {};
+let renderTimer = null;
+
+/* ═══════════════════════════════════════════════════════════════════════
+   SECCIÓN JS 3 — AGREGADOS Y RATIOS
+   ═══════════════════════════════════════════════════════════════════════ */
+function agg(v){
+  const o = {};
+  o.AC  = v.efe+v.cxc+v.cxcr+v.ocxc+v.ant+v.inv+v.aig;
+  o.ANC = v.oaf+v.sub+v.cxcr2+v.ocxc2+v.pinv+v.ppe+v.int+v.oanf;
+  o.TA  = o.AC+o.ANC;
+  o.PC  = v.ofc+v.cxp+v.cxpr+v.ocxp+v.pig;
+  o.PNC = v.ofl+v.ocxpl+v.pid;
+  o.TP  = o.PC+o.PNC;
+  o.PAT = v.cap+v.ai+v.orc+v.ra+v.orp;
+  o.TPP = o.TP+o.PAT;
+  o.UB  = v.ing-v.cv;
+  o.UO  = o.UB-v.gv-v.ga+v.oio-v.ogo;
+  o.UAI = o.UO+v.ifn-v.gf+v.sb+v.dc;
+  o.UN  = o.UAI-v.imp;
+  return o;
+}
+function ratios(c,p,pcr){
+  const av=(a,b)=>(a+b)/2;
+  const o={};
+  o.ctno = c.AC-c.PC;
+  o.ktno = c.cxc+c.inv-c.cxp;
+  o.lc   = c.AC/c.PC;
+  o.pa   = (c.AC-c.inv)/c.PC;
+  o.pd   = c.efe/c.PC;
+  o.rinv = c.cv/av(c.inv,p.inv);  o.dio = 360/o.rinv;
+  o.rcxc = (c.ing*pcr)/av(c.cxc,p.cxc); o.dso = 360/o.rcxc;
+  o.rcxp = c.cv/av(c.cxp,p.cxp);  o.dpo = 360/o.rcxp;
+  o.co   = o.dio+o.dso;
+  o.cce  = o.co-o.dpo;
+  o.rta  = c.ing/av(c.TA,p.TA);
+  o.rtf  = c.ing/av(c.ANC,p.ANC);
+  o.rtc  = c.ing/av(c.AC,p.AC);
+  o.rct  = c.ing/o.ctno;
+  o.sg   = c.TA/c.TP;
+  o.elp  = c.PNC/c.PAT;
+  o.et   = c.TP/c.TA;
+  o.apat = c.TP/c.PAT;
+  o.cob  = c.UO/c.gf;
+  o.dlp  = c.PNC/c.TA;
+  o.af   = c.TA/c.PAT;
+  o.mb   = c.UB/c.ing;
+  o.mo   = c.UO/c.ing;
+  o.mn   = c.UN/c.ing;
+  o.roa  = c.UN/av(c.TA,p.TA);
+  o.roe  = c.UN/av(c.PAT,p.PAT);
+  o.dmn  = c.UN/c.ing;
+  o.dra  = c.ing/c.TA;
+  o.dap  = c.TA/c.PAT;
+  o.droa = o.dmn*o.dra;
+  o.droe = o.droa*o.dap;
+  return o;
+}
+function recompute(){
+  c25 = {...S, ...agg(S)};
+  c24 = {...ORIG.y2024, ...agg(ORIG.y2024)};
+  r25 = ratios(c25, c24, PCR/100);
+  r24 = ratios(c24, c24, PCR/100);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   SECCIÓN JS 4 — FORMATEADORES
+   ═══════════════════════════════════════════════════════════════════════ */
+const NF = new Intl.NumberFormat('es-PE');
+const n0 = v => Number.isFinite(v) ? NF.format(Math.round(v)) : '—';
+const n2 = (v,d=2) => Number.isFinite(v) ? v.toLocaleString('es-PE',{minimumFractionDigits:d,maximumFractionDigits:d}) : '—';
+const pct = (v,d=1) => Number.isFinite(v) ? n2(v*100,d)+' %' : '—';
+const tms = v => Number.isFinite(v) ? n2(v,2)+'×' : '—';
+const dys = v => Number.isFinite(v) ? n0(v)+' días' : '—';
+const mil = v => 'S/ '+n0(v)+' mil';
+const rel = (a,b) => (!b||!Number.isFinite(a/b)) ? '—' : n2((a/b-1)*100,1)+' %';
+
+const FAV = {
+  efe:1,cxc:-1,cxcr:-1,ocxc:-1,ant:-1,inv:-1,aig:1,
+  oaf:1,sub:1,cxcr2:-1,ocxc2:-1,pinv:1,ppe:1,int:1,oanf:1,
+  ofc:-1,cxp:1,cxpr:1,ocxp:-1,pig:-1,
+  ofl:-1,ocxpl:-1,pid:-1,
+  cap:0,ai:0,orc:0,ra:1,orp:0,
+  ing:1,cv:-1,gv:-1,ga:-1,oio:1,ogo:-1,ifn:1,gf:-1,sb:1,dc:1,imp:-1
+};
+function trendArrow(a,b){
+  if(!Number.isFinite(a)||!Number.isFinite(b)||a===b) return '<span class="bd neu">▬</span>';
+  const up=a>b;
+  return `<span class="bd ${up?'pos':'neg'}">${up?'▲':'▼'}</span>`;
+}
+function trendArrowFav(a,b,fav){
+  if(fav===0||!Number.isFinite(a)||!Number.isFinite(b)||a===b) return '<span class="bd neu">▬</span>';
+  const up=a>b, good=(fav>0)===up;
+  return `<span class="bd ${good?'pos':'neg'}">${up?'▲':'▼'}</span>`;
+}
+const chipOK = (ok,txt='Cumple') => `<span class="chip ${ok?'pos':'neg'}">${ok?'✔':'✘'} ${txt}</span>`;
+
+/* ═══════════════════════════════════════════════════════════════════════
+   SECCIÓN JS 5 — ETIQUETAS Y ESTRUCTURA DE TABLAS
+   ═══════════════════════════════════════════════════════════════════════ */
+const LB = {
+  efe:'Efectivo y equivalentes al efectivo',cxc:'Cuentas por cobrar comerciales',
+  cxcr:'Cuentas por cobrar a entidades relacionadas',ocxc:'Otras cuentas por cobrar',
+  ant:'Anticipos',inv:'Inventarios',aig:'Activos por impuestos a las ganancias',
+  oaf:'Otros activos financieros',sub:'Inversiones en subsidiarias, negocios conjuntos y asociadas',
+  cxcr2:'Cuentas por cobrar a entidades relacionadas (no corriente)',
+  ocxc2:'Otras cuentas por cobrar (no corriente)',
+  pinv:'Propiedades de inversión',ppe:'Propiedades, planta y equipo',
+  int:'Activos intangibles distintos de la plusvalía',oanf:'Otros activos no financieros',
+  ofc:'Otros pasivos financieros (corriente)',cxp:'Cuentas por pagar comerciales',
+  cxpr:'Cuentas por pagar a entidades relacionadas',ocxp:'Otras cuentas por pagar',
+  pig:'Pasivos por impuestos a las ganancias',ofl:'Otros pasivos financieros (no corriente)',
+  ocxpl:'Otras cuentas por pagar (no corriente)',pid:'Pasivos por impuestos diferidos',
+  cap:'Capital emitido',ai:'Acciones de inversión',orc:'Otras reservas de capital',
+  ra:'Resultados acumulados',orp:'Otras reservas de patrimonio',
+  ing:'Ingresos de actividades ordinarias',cv:'Costo de ventas',
+  gv:'Gastos de ventas y distribución',ga:'Gastos de administración',
+  oio:'Otros ingresos operativos',ogo:'Otros gastos operativos',
+  ifn:'Ingresos financieros',gf:'Gastos financieros',
+  sb:'Resultado de subsidiarias, asociadas y negocios conjuntos',
+  dc:'Diferencias de cambio neto',imp:'Impuesto a las ganancias',
+  AC:'Total activos corrientes',ANC:'Total activos no corrientes',TA:'TOTAL ACTIVOS',
+  PC:'Total pasivos corrientes',PNC:'Total pasivos no corrientes',TP:'Total pasivos',
+  PAT:'Total patrimonio',TPP:'TOTAL PASIVO Y PATRIMONIO',
+  UB:'Ganancia (pérdida) bruta',UO:'Ganancia (pérdida) operativa',
+  UAI:'Ganancia (pérdida) antes de impuestos',UN:'Ganancia (pérdida) neta del ejercicio'
+};
+const BS_ROWS = [
+  ['h','Activos corrientes'],
+  ['d','efe'],['d','cxc'],['d','cxcr'],['d','ocxc'],['d','ant'],['d','inv'],['d','aig'],
+  ['t','AC'],['h','Activos no corrientes'],
+  ['d','oaf'],['d','sub'],['d','cxcr2'],['d','ocxc2'],['d','pinv'],['d','ppe'],['d','int'],['d','oanf'],
+  ['t','ANC'],['t','TA'],
+  ['h','Pasivos corrientes'],
+  ['d','ofc'],['d','cxp'],['d','cxpr'],['d','ocxp'],['d','pig'],
+  ['t','PC'],['h','Pasivos no corrientes'],
+  ['d','ofl'],['d','ocxpl'],['d','pid'],
+  ['t','PNC'],['t','TP'],
+  ['h','Patrimonio'],
+  ['d','cap'],['d','ai'],['d','orc'],['d','ra'],['d','orp'],
+  ['t','PAT'],['t','TPP']
+];
+const PL_ROWS = [
+  ['d','ing'],['d','cv'],['t','UB'],
+  ['d','gv'],['d','ga'],['d','oio'],['d','ogo'],['t','UO'],
+  ['d','ifn'],['d','gf'],['d','sb'],['d','dc'],['t','UAI'],
+  ['d','imp'],['t','UN']
+];
+
+const CM = {
+  efe:'Mayor liquidez inmediata: la caja sube y refuerza la capacidad de pago.',
+  cxc:'Si bien baja, sigue siendo una cuenta relevante; la cobranza se aceleró (menor DSO).',
+  cxcr:'Menor saldo con relacionadas: buena señal de orden intragrupo.',
+  ocxc:'Reducción de cuentas por cobrar diversas: mejora la calidad del activo corriente.',
+  ant:'Anticipos menores: menor exposición a proveedores.',
+  inv:'La reducción es favorable: libera caja y reduce costo de almacenamiento.',
+  aig:'Desaparece el crédito fiscal por impuestos: se agotó el saldo a favor.',
+  oaf:'Menor posición en activos financieros: se prioriza el giro operativo.',
+  sub:'Mayor inversión en subsidiarias: apuesta por el crecimiento del grupo.',
+  cxcr2:'Aumento de CxC de largo plazo con relacionadas: vigilar recuperación.',
+  ocxc2:'Disminución sustancial: activo de muy largo plazo casi liquidado.',
+  pinv:'Leve reducción por depreciación: la inversión inmobiliaria se mantiene.',
+  ppe:'Leve reducción por depreciación; no hay desinversión significativa.',
+  int:'Intangibles menores: se amortizaron parte de las licencias.',
+  oanf:'Estable: sin cambios materiales.',
+  ofc:'Menor deuda financiera de corto plazo: alivia la presión de liquidez.',
+  cxp:'Mayor financiamiento de proveedores: extiende el DPO sin costo explícito.',
+  cxpr:'Más cuentas por pagar a relacionadas: financiamiento intragrupo.',
+  ocxp:'Aumento de otras cuentas por pagar: conviene revisar su composición.',
+  pig:'Aparece impuesto a la renta por pagar: la empresa pasó de saldo a favor a impuesto corriente.',
+  ofl:'Menor deuda financiera de largo plazo: baja la carga financiera futura.',
+  ocxpl:'Se extingue el saldo de otras cuentas por pagar de largo plazo.',
+  pid:'Aumenta el pasivo por impuesto diferido: coherente con mejores resultados.',
+  cap:'Sin cambios: el capital se mantiene estable.',
+  ai:'Sin cambios: las acciones de inversión se mantienen.',
+  orc:'Ligeramente mayor: se capitalizaron reservas.',
+  ra:'Aumento de resultados acumulados por la utilidad retenida del ejercicio.',
+  orp:'Casi estable: se mantienen las reservas de patrimonio.',
+  ing:'Crecimiento de ventas (+8,7 %): recuperación del dinamismo del sector construcción.',
+  cv:'El costo crece en línea con las ventas: margen bruto prácticamente estable.',
+  gv:'Gastos de venta crecen menos que las ventas: eficiencia comercial.',
+  ga:'Gastos de administración crecen 20 %, muy por encima de las ventas: punto de atención.',
+  oio:'Otros ingresos operativos suben 44 %: mejoran la utilidad operativa.',
+  ogo:'Otros gastos operativos casi se duplican: presión sobre el margen operativo.',
+  ifn:'Menores ingresos financieros por menor caja promedio remunerada.',
+  gf:'Menor gasto financiero por reducción de deuda: alivia la utilidad.',
+  sb:'En 2025 el resultado de subsidiarias es positivo y relevante.',
+  dc:'Las diferencias de cambio pasan de marginales a significativas (+889 %).',
+  imp:'Mayor impuesto a la renta por mayor utilidad antes de impuestos.'
+};
+
+/* ═══════════════════════════════════════════════════════════════════════
+   SECCIÓN JS 6 — ANÁLISIS VERTICAL Y HORIZONTAL
+   ═══════════════════════════════════════════════════════════════════════ */
+function renderAV(){
+  const movs = Object.keys(S).filter(k=>k!=='ing').map(k=>[k,(c25[k]||0)-(c24[k]||0)])
+    .sort((x,y)=>Math.abs(y[1])-Math.abs(x[1])).slice(0,3)
+    .map(([k,d])=>`${LB[k]} (${d>0?'+':'−'}S/ ${n0(Math.abs(d))} mil)`).join('; ');
+  const dA = c25.TA/c24.TA - 1;
+  const dV = c25.ing/c24.ing - 1;
+  const dU = c25.UN/c24.UN - 1;
+
+  const tbl = (rows, baseKey, title, tableId) => {
+    let html = `<div class="box tw"><table id="${tableId}"><thead><tr>
+      <th>${title}</th><th>2025</th><th>% Vert. 2025</th><th>2024</th><th>% Vert. 2024</th>
+      <th>Var. Abs.</th><th>Var. Rel.</th><th>Tendencia</th></tr></thead><tbody>`;
+    rows.forEach(([type,k])=>{
+      if(type==='h'){ html += `<tr class="grp"><td colspan="8">${k}</td></tr>`; return; }
+      const a = c25[k] ?? 0, b = c24[k] ?? 0;
+      const va = a/baseKey, vb = b/baseKey;
+      const d  = a-b;
+      const rr = b ? ((a/b-1)*100) : null;
+      const fav= FAV[k] ?? 0;
+      const chev = `<span class="ch" aria-hidden="true">▸</span>`;
+      const interpHTML = buildInterp(k, a, b, va, vb);
+      html += `<tr class="row ${type==='t'?'t':''}" data-k="${k}" data-tbl="${tableId}" tabindex="0" role="button" aria-expanded="false">
+        <td>${chev}${LB[k]}</td>
+        <td>${n0(a)}</td><td>${pct(va,2)}</td>
+        <td>${n0(b)}</td><td>${pct(vb,2)}</td>
+        <td>${d>0?'+':''}${n0(d)}</td>
+        <td>${rr===null?'—':(rr>=0?'+':'')+n2(rr,1)+' %'}</td>
+        <td>${trendArrowFav(a,b,fav)}</td>
+      </tr>
+      <tr class="interp" data-k="${k}" data-tbl="${tableId}" hidden>
+        <td colspan="8"><div class="ibox">
+          <p class="it">Interpretación</p>
+          ${interpHTML}
+        </div></td>
+      </tr>`;
+    });
+    html += `</tbody></table></div>`;
+    return html;
+  };
+
+  const el = document.getElementById('s-av');
+  el.innerHTML = `
+    <h2>Análisis horizontal y vertical</h2>
+    <p class="sub">Vertical: peso de cada cuenta sobre el total de activos (situación financiera) o sobre las ventas (resultados). Horizontal: variación 2025 vs 2024 con tendencia según naturaleza contable. <b>Haz clic en cualquier fila</b> para ver la interpretación.</p>
+    <div class="read">
+      <p><b>Lectura general.</b> El activo total ${dA>=0?'crece':'cae'} ${pct(Math.abs(dA))} y las ventas ${dV>=0?'crecen':'caen'} ${pct(Math.abs(dV))}. La utilidad neta ${dU>=0?'sube':'baja'} ${pct(Math.abs(dU))} hasta S/ ${n0(c25.UN)} mil, equivalente a ${pct(c25.UN/c25.ing)} de las ventas.</p>
+      <p>El activo corriente pesa ${pct(c25.AC/c25.TA)} del total y el patrimonio financia ${pct(c25.PAT/c25.TPP)} de los activos. Mayores movimientos absolutos: ${movs}.</p>
+      <p class="note" style="margin-top:8px">Nota de integridad: el resultado de subsidiarias se presenta neto; en 2024 fue gasto (S/ −10 368 mil), por lo que la UN 2024 asciende a S/ 196 493 mil.</p>
+    </div>
+    <h3>Estado de Situación Financiera</h3>
+    ${tbl(BS_ROWS, c25.TA, 'Cuenta (S/ mil)', 'tbl-bs')}
+    <h3>Estado de Resultados</h3>
+    ${tbl(PL_ROWS, c25.ing, 'Cuenta (S/ mil)', 'tbl-pl')}
+    <details class="ed"><summary>Nota metodológica</summary>
+      <div class="box">
+        <p>El % vertical del Estado de Situación Financiera se calcula sobre el <b>Total Activos</b> (S/ ${n0(c25.TA)} mil). El del Estado de Resultados se calcula sobre los <b>Ingresos de actividades ordinarias</b> (S/ ${n0(c25.ing)} mil).</p>
+        <p>La variación absoluta es 2025 − 2024. La variación relativa es (2025 ÷ 2024) − 1. Si el saldo 2024 es cero, se muestra "—".</p>
+        <p>La tendencia ▲/▼ se evalúa según la naturaleza contable de la cuenta: favorable si el movimiento va en el sentido esperado.</p>
+      </div>
+    </details>
+  `;
+  bindAccordion('tbl-bs');
+  bindAccordion('tbl-pl');
+}
+function buildInterp(k, a, b, va, vb){
+  const isER = ['ing','cv','gv','ga','oio','ogo','ifn','gf','sb','dc','imp','UB','UO','UAI','UN'].includes(k);
+  const base = isER ? 'ventas' : 'activo total';
+  const verbo = isER ? 'vendidos' : 'invertidos';
+  const vaPct = va*100, vbPct = vb*100;
+  const dif = vaPct - vbPct;
+  const dAbs = a-b;
+  const rel  = b ? ((a/b-1)*100) : null;
+  const fav  = FAV[k] ?? 0;
+  let tend;
+  if(fav===0) tend = 'estable (sin referencia direccional)';
+  else { const up = a>b; const ok = (fav>0)===up; tend = ok ? 'favorable' : 'desfavorable'; }
+  const cmt = CM[k] || '';
+  return `<p><b>Lectura vertical.</b> Esta cuenta representa el <b>${n2(vaPct,2)} %</b> del ${base}. Significa que por cada S/ 100 ${verbo} en 2025, S/ ${n2(vaPct,2)} corresponden a ${LB[k]}. Frente a 2024 (${n2(vbPct,2)} %), el peso ${dif>0?'sube':(dif<0?'baja':'se mantiene')} ${n2(Math.abs(dif),2)} puntos porcentuales.</p>
+  <p><b>Lectura horizontal.</b> Variación absoluta: S/ ${dAbs>=0?'+':'−'}${n0(Math.abs(dAbs))} mil (${rel===null?'—':(rel>=0?'+':'')+n2(rel,1)+' %'}). Tendencia: <b>${tend}</b>. ${cmt}</p>`;
+}
+function bindAccordion(tableId){
+  const tbl = document.getElementById(tableId);
+  if(!tbl) return;
+  tbl.addEventListener('click', e=>{
+    const row = e.target.closest('tr.row');
+    if(!row) return;
+    toggleAccordion(row, tableId);
+  });
+  tbl.addEventListener('keydown', e=>{
+    const row = e.target.closest('tr.row');
+    if(!row) return;
+    if(e.key==='Enter'||e.key===' '){ e.preventDefault(); toggleAccordion(row, tableId); }
+    if(e.key==='Escape'){ closeAll(tableId); }
+  });
+}
+function toggleAccordion(row, tableId){
+  const key = row.dataset.k;
+  const isOpen = row.getAttribute('aria-expanded')==='true';
+  closeAll(tableId);
+  if(!isOpen){
+    row.setAttribute('aria-expanded','true');
+    const interp = document.querySelector(`#${tableId} tr.interp[data-k="${key}"]`);
+    if(interp) interp.hidden = false;
+    row.querySelector('.ch').textContent = '▾';
+  }
+}
+function closeAll(tableId){
+  document.querySelectorAll(`#${tableId} tr.row`).forEach(r=>{
+    r.setAttribute('aria-expanded','false');
+    const c = r.querySelector('.ch'); if(c) c.textContent='▸';
+  });
+  document.querySelectorAll(`#${tableId} tr.interp`).forEach(r=>r.hidden=true);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   SECCIÓN JS 7 — ANÁLISIS DUPONT
+   ═══════════════════════════════════════════════════════════════════════ */
+function renderDP(){
+  const e = effects();
+  const dFmtPp = v => (v>=0?'+':'−')+n2(Math.abs(v)*100,2)+' pp';
+  const el = document.getElementById('s-dp');
+  el.innerHTML = `
+    <h2>Análisis DuPont</h2>
+    <p class="sub">ROE = margen neto × rotación de activos × apalancamiento, con <b>saldos de cierre</b> para ser consistente con la hoja DuPont del Excel fuente.</p>
+    <div class="eq">
+      ${dupontCard('Margen neto','mn',pct,r25.dmn,r24.dmn,true)}
+      <b class="op">×</b>
+      ${dupontCard('Rotación de activos','ra',tms,r25.dra,r24.dra,true)}
+      <b class="op">×</b>
+      ${dupontCard('Apalancamiento','ap',tms,r25.dap,r24.dap,false)}
+      <b class="op">=</b>
+      <div class="card" data-modal="dupont-roe" role="button" tabindex="0" aria-haspopup="dialog">
+        <h4>ROE (rentabilidad sobre patrimonio)</h4>
+        <div class="v">${pct(r25.droe,2)}<span class="bd pos">▲</span></div>
+        <div class="s">2024: ${pct(r24.droe,2)} · Δ ${dFmtPp(r25.droe-r24.droe)}</div>
+      </div>
+    </div>
+    <div class="grid" style="margin-top:14px">
+      <div class="card" data-modal="dupont-roa" role="button" tabindex="0" aria-haspopup="dialog">
+        <h4>ROA = margen × rotación</h4>
+        <div class="v">${pct(r25.droa,2)}<span class="bd pos">▲</span></div>
+        <div class="s">2024: ${pct(r24.droa,2)} · Δ ${dFmtPp(r25.droa-r24.droa)}</div>
+      </div>
+      <div class="card">
+        <h4>Utilidad neta / ventas</h4>
+        <div class="v">S/ ${n2(r25.dmn,4)}</div>
+        <div class="s">por cada S/ 1 vendido (2024: S/ ${n2(r24.dmn,4)})</div>
+      </div>
+      <div class="card">
+        <h4>Ventas / activo total</h4>
+        <div class="v">S/ ${n2(r25.dra,4)}</div>
+        <div class="s">de venta por cada S/ 1 de activo (2024: S/ ${n2(r24.dra,4)})</div>
+      </div>
+    </div>
+    <div class="read">
+      <p><b>Lectura automática.</b> El ROE ${r25.droe>=r24.droe?'sube':'baja'} de ${pct(r24.droe,2)} a ${pct(r25.droe,2)} (${dFmtPp(r25.droe-r24.droe)}). El principal impulsor es <b>${drv()}</b>. ${r25.dap<r24.dap?'El apalancamiento baja: la mejora de rentabilidad proviene de operar mejor, con menos dependencia de la deuda.':'El apalancamiento sube: parte del ROE depende de más deuda, lo que eleva el riesgo.'}</p>
+      <p><b>Descomposición del cambio del ROE (pp):</b> margen neto ${dFmtPp(e[0])}, rotación ${dFmtPp(e[1])}, apalancamiento ${dFmtPp(e[2])}.</p>
+    </div>
+    <div class="box">
+      <div class="chart-head"><h4>Aporte de cada factor a la variación del ROE (puntos porcentuales)</h4></div>
+      <div class="cv"><canvas id="chDp"></canvas></div>
+    </div>
+    <p class="note">DuPont utiliza saldos de cierre para ser consistente con la hoja Dupont del Excel fuente. La sección de solvencia y rentabilidad reporta ROA y ROE con promedios; ambos se presentan por separado.</p>
+  `;
+  drawDupontChart(e);
+}
+function dupontCard(title, key, fmt, year25, year24, trendPos = true){
+  const a = year25, b = year24;
+  const d = a-b;
+  const txt = fmt(a);
+  const bd  = trendPos ? (d>=0?'<span class="bd pos">▲</span>':'<span class="bd neg">▼</span>')
+                       : (d<=0?'<span class="bd pos">▲</span>':'<span class="bd neg">▼</span>');
+  return `<div class="card" data-modal="dupont-${key}" role="button" tabindex="0" aria-haspopup="dialog">
+    <h4>${title}</h4>
+    <div class="v">${txt}${bd}</div>
+    <div class="s">2024: ${fmt(b)} · Δ ${fmt(d)}</div>
+  </div>`;
+}
+function effects(){
+  const m = r25.dmn - r24.dmn;
+  const r = r25.dra - r24.dra;
+  const a = r25.dap - r24.dap;
+  return [ m*r24.dra*r24.dap, r25.dmn*r*r24.dap, r25.dmn*r25.dra*a ];
+}
+function drv(){
+  const e = effects();
+  const n = ['el margen neto','la rotación de activos','el apalancamiento'];
+  const i = e.map(Math.abs).indexOf(Math.max(...e.map(Math.abs)));
+  return `${n[i]} (${e[i]>=0?'+':'−'}${n2(Math.abs(e[i])*100,2)} pp)`;
+}
+function drawDupontChart(e){
+  const ctx = document.getElementById('chDp');
+  if(!ctx) return;
+  if(CHARTS.chDp) CHARTS.chDp.destroy();
+  const v = [r24.droe, ...e, r25.droe].map(x=>x*100);
+  CHARTS.chDp = new Chart(ctx, {
+    type:'bar',
+    data:{labels:['ROE 2024','Δ Margen neto','Δ Rotación','Δ Apalancamiento','ROE 2025'],
+      datasets:[{data:v, backgroundColor:['#4472C4','#70AD47','#70AD47','#C62828','#4472C4']}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{y:{title:{display:true,text:'% (puntos porcentuales)'}}}}
+  });
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   SECCIÓN JS 8 — CAPITAL DE TRABAJO
+   ═══════════════════════════════════════════════════════════════════════ */
+function renderCT(){
+  const ktnoCTNO = r25.ktno / r25.ctno;
+  const ktnoCTNO24 = r24.ktno / r24.ctno;
+  const el = document.getElementById('s-ct');
+  el.innerHTML = `
+    <h2>Capital de trabajo</h2>
+    <p class="sub">Mide cuánto respaldo corriente tiene la empresa y cuánto capital absorbe la operación. Un CTNO positivo indica colchón para el corto plazo; un KTNO menor libera caja.</p>
+    <h3>Indicadores principales</h3>
+    <div class="grid">
+      <div class="card" data-modal="cw-ctno" role="button" tabindex="0" aria-haspopup="dialog">
+        <h4>Capital de trabajo neto (CTNO)</h4>
+        <div class="v">${mil(r25.ctno)}${trendArrowFav(r25.ctno,r24.ctno,1)}</div>
+        <div class="s">2024: ${mil(r24.ctno)}</div>
+        <p class="f">AC − PC · referencia ≥ 0</p>
+        ${chipOK(r25.ctno>=0)}
+      </div>
+      <div class="card" data-modal="cw-ktno" role="button" tabindex="0" aria-haspopup="dialog">
+        <h4>Capital de trabajo operativo (KTNO)</h4>
+        <div class="v">${mil(r25.ktno)}${trendArrowFav(r25.ktno,r24.ktno,0)}</div>
+        <div class="s">2024: ${mil(r24.ktno)}</div>
+        <p class="f">CxC + Inv − CxP · menor es mejor</p>
+      </div>
+    </div>
+    <div class="read">
+      <p><b>Indicador de cobertura:</b> KTNO / CTNO = <b>${n2(ktnoCTNO,2)}</b> en 2025 (2024: ${n2(ktnoCTNO24,2)}). Es decir, el CTNO financia el <b>${pct(ktnoCTNO)}</b> del KTNO (2024: ${pct(ktnoCTNO24)}).</p>
+      <p><b>Lectura CPCC.</b> El CTNO ${r25.ctno>=0?'es positivo':'es negativo'} y ${r25.ctno>=0?'cubre':'no cubre'} las necesidades operativas. El KTNO representa el ${pct(r25.ktno/c25.ing)} de las ventas anuales; ${r25.ktno<=r25.ctno?'es financiado por el CTNO':'requiere financiamiento adicional'}.</p>
+    </div>
+    <h3>Desglose</h3>
+    <div class="grid">
+      <div class="card" data-modal="cw-AC"><h4>Activo corriente</h4><div class="v">${mil(c25.AC)}</div><div class="s">2024: ${mil(c24.AC)} · ${trendArrow(c25.AC,c24.AC)}</div></div>
+      <div class="card" data-modal="cw-PC"><h4>Pasivo corriente</h4><div class="v">${mil(c25.PC)}</div><div class="s">2024: ${mil(c24.PC)} · ${trendArrow(c25.PC,c24.PC)}</div></div>
+      <div class="card" data-modal="cw-cxc"><h4>CxC comerciales</h4><div class="v">${mil(c25.cxc)}</div><div class="s">2024: ${mil(c24.cxc)} · ${trendArrow(c25.cxc,c24.cxc)}</div></div>
+      <div class="card" data-modal="cw-inv"><h4>Inventarios</h4><div class="v">${mil(c25.inv)}</div><div class="s">2024: ${mil(c24.inv)} · ${trendArrow(c25.inv,c24.inv)}</div></div>
+      <div class="card" data-modal="cw-cxp"><h4>CxP comerciales</h4><div class="v">${mil(c25.cxp)}</div><div class="s">2024: ${mil(c24.cxp)} · ${trendArrow(c25.cxp,c24.cxp)}</div></div>
+    </div>
+  `;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   SECCIÓN JS 9 — RATIOS DE LIQUIDEZ
+   ═══════════════════════════════════════════════════════════════════════ */
+function renderLQ(){
+  const lcOk = r25.lc >= 1.5, paOk = r25.pa >= 1.0, pdOk = r25.pd >= 0.2;
+  const el = document.getElementById('s-lq');
+  el.innerHTML = `
+    <h2>Ratios de liquidez</h2>
+    <p class="sub">Capacidad de la empresa para atender sus obligaciones de corto plazo. Referencias: razón corriente ≥ 1,5; prueba ácida ≥ 1,0; prueba defensiva ≥ 0,2.</p>
+    <div class="grid">
+      <div class="card" data-modal="lq-lc" role="button" tabindex="0" aria-haspopup="dialog">
+        <h4>Razón corriente</h4>
+        <div class="v">${n2(r25.lc,2)}×${trendArrowFav(r25.lc,r24.lc,1)}</div>
+        <div class="s">2024: ${n2(r24.lc,2)}× · Ref. ≥ 1,5</div>
+        ${chipOK(lcOk, lcOk?'Cumple':'No cumple')}
+      </div>
+      <div class="card" data-modal="lq-pa" role="button" tabindex="0" aria-haspopup="dialog">
+        <h4>Prueba ácida</h4>
+        <div class="v">${n2(r25.pa,2)}×${trendArrowFav(r25.pa,r24.pa,1)}</div>
+        <div class="s">2024: ${n2(r24.pa,2)}× · Ref. ≥ 1,0</div>
+        ${chipOK(paOk, paOk?'Cumple':'No cumple')}
+      </div>
+      <div class="card" data-modal="lq-pd" role="button" tabindex="0" aria-haspopup="dialog">
+        <h4>Prueba defensiva</h4>
+        <div class="v">${n2(r25.pd,2)}×${trendArrowFav(r25.pd,r24.pd,1)}</div>
+        <div class="s">2024: ${n2(r24.pd,2)}× · Ref. ≥ 0,2</div>
+        ${chipOK(pdOk, pdOk?'Cumple':'No cumple')}
+      </div>
+    </div>
+    <div class="box" style="margin-top:14px">
+      <div class="chart-head"><h4>Comparativo de liquidez 2024 vs 2025</h4>
+        <select class="csel" data-cid="chLq" aria-label="Tipo de gráfico">
+          <option value="bar">Barras</option><option value="line">Línea</option><option value="doughnut">Circular</option>
+        </select></div>
+      <div class="cv"><canvas id="chLq"></canvas></div>
+    </div>
+    <div class="read">
+      <p><b>Lectura CPCC.</b> Por cada S/ 1 de deuda corriente, la empresa tiene <b>S/ ${n2(r25.lc,2)}</b> de activo corriente (2024: S/ ${n2(r24.lc,2)}). ${lcOk?'Cumple la referencia de 1,5.':'No cumple la referencia de 1,5: la cobertura es ajustada.'} La prueba defensiva indica que el efectivo cubre el <b>${pct(r25.pd)}</b> del pasivo corriente (antes ${pct(r24.pd)}), lo que evidencia <b>${r25.pd>=0.2?'holgura':'tensión'}</b> de caja.</p>
+    </div>
+  `;
+  drawLqChart();
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   SECCIÓN JS 10 — RATIOS DE GESTIÓN
+   ═══════════════════════════════════════════════════════════════════════ */
+function renderGS(){
+  const difDio = r25.dio - r24.dio;
+  const difDso = r25.dso - r24.dso;
+  const difDpo = r25.dpo - r24.dpo;
+  const difCo  = r25.co  - r24.co;
+  const difCce = r25.cce - r24.cce;
+  const el = document.getElementById('s-gs');
+  el.innerHTML = `
+    <h2>Ratios de gestión</h2>
+    <p class="sub">Miden la eficiencia operativa: cuánto tiempo permanece el inventario en almacén, cuánto se tarda en cobrar y en pagar. Del triángulo operativo (DIO + DSO − DPO) sale el ciclo de conversión de efectivo.</p>
+    <h3>Triángulo operativo</h3>
+    <div class="grid">
+      <div class="card" data-modal="gs-rio"><h4>Rotación de inventarios</h4><div class="v">${n2(r25.rinv,2)}×${trendArrowFav(r25.rinv,r24.rinv,1)}</div><div class="s">2024: ${n2(r24.rinv,2)}× · DIO ${dys(r25.dio)}</div><p class="f">CV ÷ Inventario promedio</p></div>
+      <div class="card" data-modal="gs-rcxc"><h4>Rotación de CxC (25 % crédito)</h4><div class="v">${n2(r25.rcxc,2)}×${trendArrowFav(r25.rcxc,r24.rcxc,1)}</div><div class="s">2024: ${n2(r24.rcxc,2)}× · DSO ${dys(r25.dso)}</div><p class="f">Ventas a crédito ÷ CxC promedio</p></div>
+      <div class="card" data-modal="gs-rcxp"><h4>Rotación de CxP</h4><div class="v">${n2(r25.rcxp,2)}×${trendArrowFav(r25.rcxp,r24.rcxp,1)}</div><div class="s">2024: ${n2(r24.rcxp,2)}× · DPO ${dys(r25.dpo)}</div><p class="f">CV ÷ CxP promedio</p></div>
+    </div>
+    <div class="grid" style="margin-top:12px">
+      <div class="card" data-modal="gs-dio"><h4>DIO · días de inventario</h4><div class="v">${dys(r25.dio)}${trendArrowFav(r25.dio,r24.dio,0)}</div><div class="s">2024: ${dys(r24.dio)} · Δ ${n0(difDio)} días</div></div>
+      <div class="card" data-modal="gs-dso"><h4>DSO · días de cobro</h4><div class="v">${dys(r25.dso)}${trendArrowFav(r25.dso,r24.dso,0)}</div><div class="s">2024: ${dys(r24.dso)} · Δ ${n0(difDso)} días</div></div>
+      <div class="card" data-modal="gs-dpo"><h4>DPO · días de pago</h4><div class="v">${dys(r25.dpo)}${trendArrowFav(r25.dpo,r24.dpo,1)}</div><div class="s">2024: ${dys(r24.dpo)} · Δ ${n0(difDpo)} días</div></div>
+      <div class="card" data-modal="gs-co"><h4>Ciclo operativo (DIO + DSO)</h4><div class="v">${dys(r25.co)}${trendArrowFav(r25.co,r24.co,0)}</div><div class="s">2024: ${dys(r24.co)} · Δ ${n0(difCo)} días</div></div>
+      <div class="card" data-modal="gs-cce"><h4>CCE · ciclo de conversión de efectivo</h4><div class="v">${dys(r25.cce)}${trendArrowFav(r25.cce,r24.cce,0)}</div><div class="s">2024: ${dys(r24.cce)} · Δ ${n0(difCce)} días</div></div>
+    </div>
+    <h3>Otras rotaciones</h3>
+    <div class="grid">
+      <div class="card" data-modal="gs-rta"><h4>Rotación de activos totales</h4><div class="v">${n2(r25.rta,2)}×${chipOK(r25.rta>0.5)}</div><div class="s">2024: ${n2(r24.rta,2)}× · Ref. > 0,5</div></div>
+      <div class="card" data-modal="gs-rtf"><h4>Rotación de activos fijos</h4><div class="v">${n2(r25.rtf,2)}×${chipOK(r25.rtf>0.5)}</div><div class="s">2024: ${n2(r24.rtf,2)}× · Ref. > 0,5</div></div>
+      <div class="card" data-modal="gs-rtc"><h4>Rotación de activos corrientes</h4><div class="v">${n2(r25.rtc,2)}×</div><div class="s">2024: ${n2(r24.rtc,2)}× · sin referencia</div></div>
+      <div class="card" data-modal="gs-rct"><h4>Rotación de capital de trabajo</h4><div class="v">${n2(r25.rct,2)}×</div><div class="s">2024: ${n2(r24.rct,2)}× · sin referencia</div></div>
+    </div>
+    <h3>Matriz de engranaje</h3>
+    <div class="box tw">
+      <table><thead><tr><th>Indicador</th><th>2025</th><th>2024</th><th>Objetivo</th><th>Resultado</th></tr></thead><tbody>
+        <tr><td>DIO</td><td>${dys(r25.dio)}</td><td>${dys(r24.dio)}</td><td>Menor es mejor</td><td>${r25.dio<=r24.dio?chipOK(true,'Cumple'):chipOK(false,'No cumple')}</td></tr>
+        <tr><td>DSO</td><td>${dys(r25.dso)}</td><td>${dys(r24.dso)}</td><td>Menor es mejor</td><td>${r25.dso<=r24.dso?chipOK(true,'Cumple'):chipOK(false,'No cumple')}</td></tr>
+        <tr><td>DPO</td><td>${dys(r25.dpo)}</td><td>${dys(r24.dpo)}</td><td>Mayor es mejor</td><td>${r25.dpo>=r24.dpo?chipOK(true,'Cumple'):chipOK(false,'No cumple')}</td></tr>
+      </tbody></table>
+    </div>
+    <div class="box" style="margin-top:14px">
+      <div class="chart-head"><h4>Triángulo operativo y ciclo de efectivo (días)</h4>
+        <select class="csel" data-cid="chGs" aria-label="Tipo de gráfico">
+          <option value="bar">Barras</option><option value="line">Línea</option>
+        </select></div>
+      <div class="cv"><canvas id="chGs"></canvas></div>
+    </div>
+    <div class="read">
+      <p><b>Diagnóstico.</b> La empresa tarda <b>${n0(r25.cce)} días</b> en recuperar la caja (2024: ${n0(r24.cce)}). El ciclo se ${r25.cce<r24.cce?'acortó':'alargó'} ${n0(Math.abs(difCce))} días frente a 2024 principalmente por ${difDso<0?'menor DSO ('+n0(difDso)+' días)':''}${difDio<0?' y menor DIO ('+n0(difDio)+' días)':''}${difDpo<0?' parcialmente compensado por menor DPO ('+n0(difDpo)+' días)':''}${difDpo>0?' y mayor DPO (+'+n0(difDpo)+' días)':''}.</p>
+      <p>El ciclo positivo implica que la operación <b>necesita financiamiento de corto plazo</b> para sostener el capital de trabajo; la reducción observada es una buena señal de gestión.</p>
+    </div>
+  `;
+  drawGsChart();
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   SECCIÓN JS 11 — SOLVENCIA Y RENTABILIDAD
+   ═══════════════════════════════════════════════════════════════════════ */
+function renderSV(){
+  const solvOk = r25.sg>1.5, elpOk = r25.elp<0.5, etOk = r25.et>=0.4 && r25.et<=0.6;
+  const apatOk = r25.apat<=1, cobOk = r25.cob>=3;
+  const el = document.getElementById('s-sv');
+  el.innerHTML = `
+    <h2>Ratios de solvencia y rentabilidad</h2>
+    <p class="sub">Solvencia: capacidad de sostener deudas y qué tan dependiente es la empresa del financiamiento externo. Rentabilidad: retorno sobre ventas, activos y patrimonio.</p>
+    <h3>Solvencia</h3>
+    <div class="grid">
+      <div class="card" data-modal="sv-sg"><h4>Solvencia general</h4><div class="v">${n2(r25.sg,2)}×${chipOK(solvOk)}</div><div class="s">2024: ${n2(r24.sg,2)}× · Ref. > 1,5</div><p class="f">Activo total ÷ Pasivo total</p></div>
+      <div class="card" data-modal="sv-elp"><h4>Endeudamiento LP</h4><div class="v">${n2(r25.elp,2)}×${chipOK(elpOk)}</div><div class="s">2024: ${n2(r24.elp,2)}× · Ref. < 0,5</div><p class="f">Pasivo no corriente ÷ Patrimonio</p></div>
+      <div class="card" data-modal="sv-et"><h4>Endeudamiento total</h4><div class="v">${pct(r25.et,2)}${chipOK(etOk)}</div><div class="s">2024: ${pct(r24.et,2)} · Rango 40 %–60 %</div><p class="f">Pasivo total ÷ Activo total</p></div>
+      <div class="card" data-modal="sv-apat"><h4>Apalancamiento patrimonial</h4><div class="v">${n2(r25.apat,2)}×${chipOK(apatOk)}</div><div class="s">2024: ${n2(r24.apat,2)}× · Ref. ≤ 1</div><p class="f">Pasivo total ÷ Patrimonio</p></div>
+      <div class="card" data-modal="sv-cob"><h4>Cobertura de intereses</h4><div class="v">${n2(r25.cob,2)}×${chipOK(cobOk)}</div><div class="s">2024: ${n2(r24.cob,2)}× · Ref. ≥ 3</div><p class="f">EBIT ÷ Gastos financieros</p></div>
+      <div class="card" data-modal="sv-dlp"><h4>Deuda LP / Activo total</h4><div class="v">${n2(r25.dlp,2)}×</div><div class="s">2024: ${n2(r24.dlp,2)}× · sin referencia</div></div>
+      <div class="card" data-modal="sv-af"><h4>Apalancamiento financiero</h4><div class="v">${n2(r25.af,2)}×</div><div class="s">2024: ${n2(r24.af,2)}× · sin referencia</div></div>
+    </div>
+    <h3>Rentabilidad</h3>
+    <div class="grid">
+      <div class="card" data-modal="sv-mb"><h4>Margen bruto</h4><div class="v">${pct(r25.mb,2)}${trendArrowFav(r25.mb,r24.mb,1)}</div><div class="s">2024: ${pct(r24.mb,2)} · Δ ${n2((r25.mb-r24.mb)*100,2)} pp</div></div>
+      <div class="card" data-modal="sv-mo"><h4>Margen operativo</h4><div class="v">${pct(r25.mo,2)}${trendArrowFav(r25.mo,r24.mo,1)}</div><div class="s">2024: ${pct(r24.mo,2)} · Δ ${n2((r25.mo-r24.mo)*100,2)} pp</div></div>
+      <div class="card" data-modal="sv-mn"><h4>Margen neto</h4><div class="v">${pct(r25.mn,2)}${trendArrowFav(r25.mn,r24.mn,1)}</div><div class="s">2024: ${pct(r24.mn,2)} · Δ ${n2((r25.mn-r24.mn)*100,2)} pp</div></div>
+      <div class="card" data-modal="sv-roa"><h4>ROA (promedios)</h4><div class="v">${pct(r25.roa,2)}${trendArrowFav(r25.roa,r24.roa,1)}</div><div class="s">2024: ${pct(r24.roa,2)} · Δ ${n2((r25.roa-r24.roa)*100,2)} pp</div></div>
+      <div class="card" data-modal="sv-roe"><h4>ROE (promedios)</h4><div class="v">${pct(r25.roe,2)}${trendArrowFav(r25.roe,r24.roe,1)}</div><div class="s">2024: ${pct(r24.roe,2)} · Δ ${n2((r25.roe-r24.roe)*100,2)} pp</div></div>
+    </div>
+    <div class="box" style="margin-top:14px">
+      <div class="chart-head"><h4>Solvencia 2024 vs 2025</h4>
+        <select class="csel" data-cid="chSvSolv" aria-label="Tipo de gráfico">
+          <option value="bar">Barras</option><option value="line">Línea</option>
+        </select></div>
+      <div class="cv"><canvas id="chSvSolv"></canvas></div>
+    </div>
+    <div class="box" style="margin-top:14px">
+      <div class="chart-head"><h4>Rentabilidad 2024 vs 2025</h4>
+        <select class="csel" data-cid="chSvRent" aria-label="Tipo de gráfico">
+          <option value="bar">Barras</option><option value="line">Línea</option>
+        </select></div>
+      <div class="cv"><canvas id="chSvRent"></canvas></div>
+    </div>
+    <p class="note">ROA y ROE de esta sección usan promedios (2025+2024)/2 para 2025 y cierre 2024 para 2024 (no hay 2023). El ROE de DuPont usa saldos de cierre; ambos se reportan por separado.</p>
+  `;
+  drawSvCharts();
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   SECCIÓN JS 12 — DASHBOARD
+   ═══════════════════════════════════════════════════════════════════════ */
+function renderDB(){
+  const el = document.getElementById('s-db');
+  el.innerHTML = `
+    <h2>Dashboard</h2>
+    <p class="sub">Indicadores clave, gráficos interactivos y simulador. Cambia cualquier monto 2025 y todos los cálculos se actualizan al instante. 2024 se mantiene como base de comparación.</p>
+    <h3>KPIs superiores</h3>
+    <div class="grid" id="kpis"></div>
+    <div class="read" id="dbRead"></div>
+    <p id="dbBalance"></p>
+    <div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(min(360px,100%),1fr))">
+      ${dashBox('ch1','Estructura del balance (S/ mil)',['bar','line','doughnut'])}
+      ${dashBox('ch2','Márgenes (% sobre ventas)',['bar','line'])}
+      ${dashBox('ch3','Triángulo operativo y ciclo (días)',['bar','line'])}
+      ${dashBox('ch4','Composición del financiamiento 2025',['doughnut','pie','bar'])}
+      ${dashBox('ch5','Liquidez y solvencia (veces)',['bar','line'])}
+      ${dashBox('ch6','Composición de los activos 2025',['pie','doughnut','bar'])}
+      ${dashBox('ch7','Destino de cada S/ 100 vendidos (2025)',['pie','doughnut','bar'])}
+    </div>
+    <h3 class="no-print">Simulador</h3>
+    <div class="box no-print">
+      <p class="note" style="margin-bottom:12px">Los sliders ajustan los montos 2025 en ±30 %. Los cambios se aplican a todas las secciones, tablas, tarjetas y gráficos.</p>
+      <div class="sim">
+        <div><label for="s-ing">Ventas: <b id="v-ing">0 %</b></label><input type="range" id="s-ing" min="-30" max="30" value="0" data-sim="ing"></div>
+        <div><label for="s-cv">Costo de ventas: <b id="v-cv">0 %</b></label><input type="range" id="s-cv" min="-30" max="30" value="0" data-sim="cv"></div>
+        <div><label for="s-inv">Inventarios: <b id="v-inv">0 %</b></label><input type="range" id="s-inv" min="-30" max="30" value="0" data-sim="inv"></div>
+        <div><label for="s-cxc">CxC comerciales: <b id="v-cxc">0 %</b></label><input type="range" id="s-cxc" min="-30" max="30" value="0" data-sim="cxc"></div>
+        <div><label for="s-cxp">CxP comerciales: <b id="v-cxp">0 %</b></label><input type="range" id="s-cxp" min="-30" max="30" value="0" data-sim="cxp"></div>
+        <div><label for="s-fin">Deuda financiera CP+LP: <b id="v-fin">0 %</b></label><input type="range" id="s-fin" min="-30" max="30" value="0" data-sim="fin"></div>
+        <div><label for="pcr">Ventas a crédito (% de ventas)</label><input type="number" id="pcr" min="1" max="100" value="25"></div>
+      </div>
+      <details class="ed" style="margin-top:14px">
+        <summary>Edición avanzada por cuenta (S/ mil)</summary>
+        <div class="sim" id="advInputs"></div>
+      </details>
+    </div>
+  `;
+  renderKPIs();
+  renderAdvInputs();
+  bindChartSelectors();
+  drawDashCharts();
+}
+function dashBox(id, title, types){
+  const opts = types.map(t=>{
+    const lab = t==='bar'?'Barras':t==='line'?'Línea':t==='pie'?'Circular':'Dona';
+    return `<option value="${t}">${lab}</option>`;
+  }).join('');
+  return `<div class="box">
+    <div class="chart-head"><h4>${title}</h4>
+      <select class="csel" data-cid="${id}" aria-label="Tipo de gráfico">${opts}</select></div>
+    <div class="cv"><canvas id="${id}"></canvas></div>
+  </div>`;
+}
+function renderKPIs(){
+  const kpis = [
+    ['ROE','roe',pct,1],['Margen neto','mn',pct,1],
+    ['Liquidez corriente','lc',tms,0],['Endeudamiento total','et',pct,0],
+    ['CCE','cce',dys,0],['KTNO','ktno',mil,0]
+  ];
+  document.getElementById('kpis').innerHTML = kpis.map(([t,k,f,pos])=>{
+    const a = r25[k], b = r24[k];
+    const up = a>=b;
+    return `<div class="card" data-modal="kpi-${k}" role="button" tabindex="0" aria-haspopup="dialog">
+      <h4>${t}</h4>
+      <div class="v">${f(a)}${up?'<span class="bd pos">▲</span>':'<span class="bd neg">▼</span>'}</div>
+      <div class="s">2024: ${f(b)}</div>
+    </div>`;
+  }).join('');
+  const rd = document.getElementById('dbRead');
+  if(rd) rd.innerHTML = `
+    <p><b>Rentabilidad.</b> ROE ${pct(r25.roe,2)} (${r25.roe>=r24.roe?'mejora':'cae'} frente a ${pct(r24.roe,2)}); margen neto ${pct(r25.mn,2)}. El ROE DuPont (saldos de cierre) es ${pct(r25.droe,2)}.</p>
+    <p><b>Liquidez.</b> Razón corriente ${n2(r25.lc,2)}× (${r25.lc>=1.5?'cumple':'no cumple'} la referencia de 1,5); prueba ácida ${n2(r25.pa,2)}×. CTNO ${mil(r25.ctno)} y KTNO ${mil(r25.ktno)}.</p>
+    <p><b>Gestión.</b> CCE ${n0(r25.cce)} días (DIO ${n0(r25.dio)}, DSO ${n0(r25.dso)}, DPO ${n0(r25.dpo)}).</p>
+    <p><b>Solvencia.</b> Endeudamiento total ${pct(r25.et,2)}; cobertura de intereses ${n2(r25.cob,2)}×.</p>
+  `;
+  const bl = document.getElementById('dbBalance');
+  if(bl){
+    const dif = c25.TA - c25.TPP;
+    if(Math.abs(dif) < 1){
+      bl.innerHTML = `<span style="color:var(--positive);font-weight:700">✔ Balance cuadrado: activos = pasivo + patrimonio (S/ ${n0(c25.TA)} mil).</span>`;
+    } else {
+      bl.innerHTML = `<span style="color:var(--negative);font-weight:700">⚠ Descuadre de S/ ${n0(dif)} mil entre activos y pasivo + patrimonio.</span> <button class="btn" id="btnCuadrar" style="margin-left:8px">Cuadrar con efectivo</button>`;
+      const b = document.getElementById('btnCuadrar');
+      if(b) b.onclick = () => { S.efe += (c25.TPP - c25.TA); recompute(); renderAll(); };
+    }
+  }
+}
+function renderAdvInputs(){
+  const cont = document.getElementById('advInputs');
+  if(!cont) return;
+  const keys = ['efe','cxc','inv','ppe','cxp','ofc','ofl','ra','ing','cv','gv','ga','gf','imp','sb'];
+  cont.innerHTML = keys.map(k=>`<div><label for="adv-${k}">${LB[k]}</label>
+    <input type="number" id="adv-${k}" data-adv="${k}" value="${S[k]}"></div>`).join('');
+  cont.querySelectorAll('[data-adv]').forEach(inp=>{
+    inp.addEventListener('input', ()=>{
+      S[inp.dataset.adv] = parseFloat(inp.value) || 0;
+      scheduleRender();
+      setBadge(true);
+    });
+  });
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   SECCIÓN JS 13 — GRÁFICOS (Chart.js)
+   ═══════════════════════════════════════════════════════════════════════ */
+function pal(){return ['#4472C4','#ED7D31','#A5A5A5','#FFC000','#5B9BD5','#70AD47'];}
+function palLt(){return ['#4472C4AA','#ED7D31AA','#A5A5A5AA','#FFC000AA','#5B9BD5AA','#70AD47AA'];}
+function destroyChart(id){ if(CHARTS[id]){ CHARTS[id].destroy(); delete CHARTS[id]; } }
+function drawChart(id, cfg){
+  const el = document.getElementById(id);
+  if(!el) return;
+  destroyChart(id);
+  CHARTS[id] = new Chart(el, cfg);
+}
+function chartCfg(type, labels, l24, v24, l25, v25, opt={}){
+  if(type==='doughnut' || type==='pie'){
+    return { type: type === 'pie' ? 'pie' : 'doughnut',
+      data:{labels, datasets:[
+        {label:l24, data:v24, backgroundColor:palLt(), borderWidth:1},
+        {label:l25, data:v25, backgroundColor:pal(), borderWidth:1}
+      ]},
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom'}}}};
+  }
+  return { type: type === 'line' ? 'line' : 'bar',
+    data:{labels, datasets:[
+      {label:l24, data:v24, backgroundColor:type==='line'?'#4472C4':'#4472C488', borderColor:'#4472C4', borderWidth:2, fill:false, tension:.3},
+      {label:l25, data:v25, backgroundColor:type==='line'?'#ED7D31':'#ED7D31', borderColor:'#ED7D31', borderWidth:2, fill:false, tension:.3}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{position:'bottom'}},
+      scales:{y:{title:opt.yTitle?{display:true,text:opt.yTitle}:undefined}}}};
+}
+function drawLqChart(){
+  const t = document.querySelector('[data-cid="chLq"]')?.value || 'bar';
+  drawChart('chLq', chartCfg(t, ['Razón corriente','Prueba ácida','Prueba defensiva'],
+    'Liquidez 2024', [r24.lc,r24.pa,r24.pd], 'Liquidez 2025', [r25.lc,r25.pa,r25.pd], {yTitle:'veces'}));
+}
+function drawGsChart(){
+  const t = document.querySelector('[data-cid="chGs"]')?.value || 'bar';
+  drawChart('chGs', chartCfg(t, ['DIO','DSO','DPO','Ciclo operativo','CCE'],
+    '2024', [r24.dio,r24.dso,r24.dpo,r24.co,r24.cce], '2025', [r25.dio,r25.dso,r25.dpo,r25.co,r25.cce], {yTitle:'días'}));
+}
+function drawSvCharts(){
+  const t1 = document.querySelector('[data-cid="chSvSolv"]')?.value || 'bar';
+  const t2 = document.querySelector('[data-cid="chSvRent"]')?.value || 'bar';
+  drawChart('chSvSolv', chartCfg(t1, ['Solvencia general','Endeud. LP','Endeud. total','Apal. patrim.','Cobertura int.'],
+    '2024', [r24.sg,r24.elp,r24.et,r24.apat,r24.cob], '2025', [r25.sg,r25.elp,r25.et,r25.apat,r25.cob], {yTitle:'veces / ratio'}));
+  drawChart('chSvRent', chartCfg(t2, ['Margen bruto','Margen operativo','Margen neto','ROA','ROE'],
+    '2024', [r24.mb*100,r24.mo*100,r24.mn*100,r24.roa*100,r24.roe*100], '2025', [r25.mb*100,r25.mo*100,r25.mn*100,r25.roa*100,r25.roe*100], {yTitle:'%'}));
+}
+function drawDashCharts(){
+  { const t = document.querySelector('[data-cid="ch1"]')?.value || 'bar';
+    drawChart('ch1', chartCfg(t, ['Activo corriente','Activo no corriente','Pasivo corriente','Pasivo no corriente','Patrimonio'],
+      '2024', [c24.AC,c24.ANC,c24.PC,c24.PNC,c24.PAT], '2025', [c25.AC,c25.ANC,c25.PC,c25.PNC,c25.PAT], {yTitle:'S/ mil'})); }
+  { const t = document.querySelector('[data-cid="ch2"]')?.value || 'bar';
+    drawChart('ch2', chartCfg(t, ['Margen bruto','Margen operativo','Margen neto'],
+      '2024', [r24.mb*100,r24.mo*100,r24.mn*100], '2025', [r25.mb*100,r25.mo*100,r25.mn*100], {yTitle:'%'})); }
+  { const t = document.querySelector('[data-cid="ch3"]')?.value || 'bar';
+    drawChart('ch3', chartCfg(t, ['DIO','DSO','DPO','Ciclo operativo','CCE'],
+      '2024', [r24.dio,r24.dso,r24.dpo,r24.co,r24.cce], '2025', [r25.dio,r25.dso,r25.dpo,r25.co,r25.cce], {yTitle:'días'})); }
+  { const t = document.querySelector('[data-cid="ch4"]')?.value || 'doughnut';
+    const labels = ['Pasivo corriente','Pasivo no corriente','Patrimonio'];
+    const data = [c25.PC,c25.PNC,c25.PAT];
+    if(t === 'bar' || t === 'line'){
+      drawChart('ch4', {type:t, data:{labels, datasets:[{label:'2025', data, backgroundColor:pal(), borderColor:'#4472C4', borderWidth:2}]},
+        options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom'}}}});
+    } else {
+      drawChart('ch4', {type:t, data:{labels, datasets:[{data, backgroundColor:pal(), borderWidth:2}]},
+        options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom'}}}});
+    }
+  }
+  { const t = document.querySelector('[data-cid="ch5"]')?.value || 'bar';
+    drawChart('ch5', chartCfg(t, ['Razón corriente','Prueba ácida','Prueba defensiva','Solvencia general','Cobertura intereses'],
+      '2024', [r24.lc,r24.pa,r24.pd,r24.sg,r24.cob], '2025', [r25.lc,r25.pa,r25.pd,r25.sg,r25.cob], {yTitle:'veces'})); }
+  { const t = document.querySelector('[data-cid="ch6"]')?.value || 'pie';
+    const otros = Math.max(0, c25.TA - c25.efe - c25.cxc - c25.cxcr - c25.ocxc - c25.inv - c25.ppe);
+    const labels = ['Efectivo','CxC comerciales','Inventarios','PPE','Otros'];
+    const data = [c25.efe,c25.cxc,c25.inv,c25.ppe,otros];
+    if(t === 'bar'){
+      drawChart('ch6', {type:'bar', data:{labels, datasets:[{label:'S/ mil', data, backgroundColor:pal()}]},
+        options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+          scales:{y:{title:{display:true,text:'S/ mil'}}}}});
+    } else {
+      drawChart('ch6', {type:t, data:{labels, datasets:[{data, backgroundColor:pal(), borderWidth:2}]},
+        options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom'},
+          tooltip:{callbacks:{label:ctx=>`${ctx.label}: S/ ${n0(ctx.parsed)} mil (${pct(ctx.parsed/c25.TA)})`}}}}});
+    }
+  }
+  { const t = document.querySelector('[data-cid="ch7"]')?.value || 'pie';
+    const ing = c25.ing || 1;
+    const data = [c25.cv/ing*100, (c25.gv+c25.ga)/ing*100, c25.imp/ing*100, Math.max(0, c25.UN/ing*100), Math.max(0, 100 - (c25.cv+c25.gv+c25.ga+c25.imp+c25.UN)/ing*100)];
+    const labels = ['Costo de ventas','Gastos de venta y administración','Impuesto a la renta','Utilidad neta','Resto (neto financiero y otros)'];
+    if(t === 'bar'){
+      drawChart('ch7', {type:'bar', data:{labels, datasets:[{label:'S/ por cada S/ 100 vendidos', data, backgroundColor:pal()}]},
+        options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+          scales:{y:{title:{display:true,text:'S/ por cada S/ 100'}}}}});
+    } else {
+      drawChart('ch7', {type:t, data:{labels, datasets:[{data, backgroundColor:pal(), borderWidth:2}]},
+        options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom'},
+          tooltip:{callbacks:{label:ctx=>`${ctx.label}: S/ ${n2(ctx.parsed,2)}`}}}}});
+    }
+  }
+}
+function bindChartSelectors(){
+  document.querySelectorAll('[data-cid]').forEach(sel=>{
+    sel.onchange = ()=>{
+      const id = sel.dataset.cid;
+      if(id==='chLq') drawLqChart();
+      else if(id==='chGs') drawGsChart();
+      else if(id==='chSvSolv'||id==='chSvRent') drawSvCharts();
+      else if(id.startsWith('ch')) drawDashCharts();
+    };
+  });
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   SECCIÓN JS 14 — MODALES
+   ═══════════════════════════════════════════════════════════════════════ */
+const MODAL_BUILDERS = {};
+function openModal(html, title){
+  const dlg = document.getElementById('modal');
+  document.getElementById('mtitle').textContent = title || 'Detalle';
+  document.getElementById('mbody').innerHTML = html;
+  if(!dlg.open) dlg.showModal();
+}
+MODAL_BUILDERS['dupont-mn'] = () => ({ title:'Margen neto',
+  body:`<p><b>Fórmula:</b> Utilidad neta ÷ Ingresos</p>
+    <div class="mrow"><div><span>2025</span><code>${n0(c25.UN)} ÷ ${n0(c25.ing)}</code><b>${pct(r25.dmn,2)}</b></div>
+    <div><span>2024</span><code>${n0(c24.UN)} ÷ ${n0(c24.ing)}</code><b>${pct(r24.dmn,2)}</b></div></div>
+    <p><b>Variación:</b> ${chipOK(r25.dmn>=r24.dmn)} ${(r25.dmn>=r24.dmn?'+':'−')}${n2(Math.abs(r25.dmn-r24.dmn)*100,2)} pp.</p>
+    <p><b>Lectura CPCC.</b> Por cada S/ 100 vendidos, la empresa retiene <b>S/ ${n2(r25.dmn*100,2)}</b> como utilidad neta.</p>` });
+MODAL_BUILDERS['dupont-ra'] = () => ({ title:'Rotación de activos',
+  body:`<p><b>Fórmula:</b> Ingresos ÷ Activo total (saldos de cierre)</p>
+    <div class="mrow"><div><span>2025</span><code>${n0(c25.ing)} ÷ ${n0(c25.TA)}</code><b>${tms(r25.dra)}</b></div>
+    <div><span>2024</span><code>${n0(c24.ing)} ÷ ${n0(c24.TA)}</code><b>${tms(r24.dra)}</b></div></div>
+    <p><b>Variación:</b> ${chipOK(r25.dra>=r24.dra)} ${(r25.dra>=r24.dra?'+':'−')}${n2(Math.abs(r25.dra-r24.dra),4)} veces.</p>` });
+MODAL_BUILDERS['dupont-ap'] = () => ({ title:'Apalancamiento (activo / patrimonio)',
+  body:`<p><b>Fórmula:</b> Activo total ÷ Patrimonio</p>
+    <div class="mrow"><div><span>2025</span><code>${n0(c25.TA)} ÷ ${n0(c25.PAT)}</code><b>${tms(r25.dap)}</b></div>
+    <div><span>2024</span><code>${n0(c24.TA)} ÷ ${n0(c24.PAT)}</code><b>${tms(r24.dap)}</b></div></div>
+    <p><b>Lectura CPCC.</b> La reducción del apalancamiento indica menor dependencia de la deuda: buena señal de calidad del ROE.</p>` });
+MODAL_BUILDERS['dupont-roa'] = () => ({ title:'ROA = margen neto × rotación',
+  body:`<p><b>Fórmula:</b> (UN ÷ Ingresos) × (Ingresos ÷ TA)</p>
+    <div class="mrow"><div><span>2025</span><code>${pct(r25.dmn,2)} × ${tms(r25.dra)}</code><b>${pct(r25.droa,2)}</b></div>
+    <div><span>2024</span><code>${pct(r24.dmn,2)} × ${tms(r24.dra)}</code><b>${pct(r24.droa,2)}</b></div></div>
+    <p><b>Variación:</b> ${chipOK(r25.droa>=r24.droa)} ${(r25.droa>=r24.droa?'+':'−')}${n2(Math.abs(r25.droa-r24.droa)*100,2)} pp.</p>` });
+MODAL_BUILDERS['dupont-roe'] = () => { const e = effects();
+  return { title:'ROE (DuPont)',
+    body:`<p><b>Fórmula:</b> Margen neto × Rotación × Apalancamiento</p>
+      <div class="mrow"><div><span>2025</span><code>${pct(r25.dmn,2)} × ${tms(r25.dra)} × ${tms(r25.dap)}</code><b>${pct(r25.droe,2)}</b></div>
+      <div><span>2024</span><code>${pct(r24.dmn,2)} × ${tms(r24.dra)} × ${tms(r24.dap)}</code><b>${pct(r24.droe,2)}</b></div></div>
+      <p><b>Descomposición (pp):</b> margen ${(e[0]>=0?'+':'−')}${n2(Math.abs(e[0])*100,2)}, rotación ${(e[1]>=0?'+':'−')}${n2(Math.abs(e[1])*100,2)}, apalancamiento ${(e[2]>=0?'+':'−')}${n2(Math.abs(e[2])*100,2)}.</p>` };
+};
+MODAL_BUILDERS['cw-ctno'] = () => ({ title:'Capital de trabajo neto (CTNO)',
+  body:`<p><b>Fórmula:</b> Activo corriente − Pasivo corriente</p>
+    <div class="mrow"><div><span>2025</span><code>${n0(c25.AC)} − ${n0(c25.PC)}</code><b>${mil(r25.ctno)}</b></div>
+    <div><span>2024</span><code>${n0(c24.AC)} − ${n0(c24.PC)}</code><b>${mil(r24.ctno)}</b></div></div>
+    <p><b>Lectura CPCC.</b> El CTNO es <b>${r25.ctno>=0?'positivo':'negativo'}</b> (${mil(r25.ctno)}) y ${r25.ctno>=0?'cubre':'no cubre'} las obligaciones de corto plazo.</p>` });
+MODAL_BUILDERS['cw-ktno'] = () => ({ title:'Capital de trabajo operativo (KTNO)',
+  body:`<p><b>Fórmula:</b> CxC + Inventarios − CxP</p>
+    <div class="mrow"><div><span>2025</span><code>${n0(c25.cxc)} + ${n0(c25.inv)} − ${n0(c25.cxp)}</code><b>${mil(r25.ktno)}</b></div>
+    <div><span>2024</span><code>${n0(c24.cxc)} + ${n0(c24.inv)} − ${n0(c24.cxp)}</code><b>${mil(r24.ktno)}</b></div></div>
+    <p><b>Lectura CPCC.</b> Representa el <b>${pct(r25.ktno/c25.ing)}</b> de las ventas anuales.</p>` });
+MODAL_BUILDERS['cw-AC'] = () => ({ title:'Activo corriente',
+  body:`<p><b>2025:</b> ${mil(c25.AC)} · <b>2024:</b> ${mil(c24.AC)} · Var. ${rel(c25.AC,c24.AC)}.</p>` });
+MODAL_BUILDERS['cw-PC'] = () => ({ title:'Pasivo corriente',
+  body:`<p><b>2025:</b> ${mil(c25.PC)} · <b>2024:</b> ${mil(c24.PC)} · Var. ${rel(c25.PC,c24.PC)}.</p>` });
+MODAL_BUILDERS['cw-cxc'] = () => ({ title:'Cuentas por cobrar comerciales',
+  body:`<p><b>2025:</b> ${mil(c25.cxc)} · <b>2024:</b> ${mil(c24.cxc)} · Var. ${rel(c25.cxc,c24.cxc)}.</p>
+    <p><b>DSO:</b> ${dys(r25.dso)} (2024: ${dys(r24.dso)}).</p>` });
+MODAL_BUILDERS['cw-inv'] = () => ({ title:'Inventarios',
+  body:`<p><b>2025:</b> ${mil(c25.inv)} · <b>2024:</b> ${mil(c24.inv)} · Var. ${rel(c25.inv,c24.inv)}.</p>
+    <p><b>DIO:</b> ${dys(r25.dio)} (2024: ${dys(r24.dio)}).</p>` });
+MODAL_BUILDERS['cw-cxp'] = () => ({ title:'Cuentas por pagar comerciales',
+  body:`<p><b>2025:</b> ${mil(c25.cxp)} · <b>2024:</b> ${mil(c24.cxp)} · Var. ${rel(c25.cxp,c24.cxp)}.</p>
+    <p><b>DPO:</b> ${dys(r25.dpo)} (2024: ${dys(r24.dpo)}).</p>` });
+MODAL_BUILDERS['lq-lc'] = () => ({ title:'Razón corriente',
+  body:`<p><b>Fórmula:</b> AC ÷ PC</p>
+    <div class="mrow"><div><span>2025</span><code>${n0(c25.AC)} ÷ ${n0(c25.PC)}</code><b>${n2(r25.lc,2)}×</b></div>
+    <div><span>2024</span><code>${n0(c24.AC)} ÷ ${n0(c24.PC)}</code><b>${n2(r24.lc,2)}×</b></div></div>
+    <p><b>Referencia:</b> ≥ 1,5. ${chipOK(r25.lc>=1.5)}</p>` });
+MODAL_BUILDERS['lq-pa'] = () => ({ title:'Prueba ácida',
+  body:`<p><b>Fórmula:</b> (AC − Inventarios) ÷ PC</p>
+    <div class="mrow"><div><span>2025</span><code>(${n0(c25.AC)} − ${n0(c25.inv)}) ÷ ${n0(c25.PC)}</code><b>${n2(r25.pa,2)}×</b></div>
+    <div><span>2024</span><code>(${n0(c24.AC)} − ${n0(c24.inv)}) ÷ ${n0(c24.PC)}</code><b>${n2(r24.pa,2)}×</b></div></div>
+    <p><b>Referencia:</b> ≥ 1,0. ${chipOK(r25.pa>=1)}</p>` });
+MODAL_BUILDERS['lq-pd'] = () => ({ title:'Prueba defensiva',
+  body:`<p><b>Fórmula:</b> Efectivo ÷ PC</p>
+    <div class="mrow"><div><span>2025</span><code>${n0(c25.efe)} ÷ ${n0(c25.PC)}</code><b>${n2(r25.pd,2)}×</b></div>
+    <div><span>2024</span><code>${n0(c24.efe)} ÷ ${n0(c24.PC)}</code><b>${n2(r24.pd,2)}×</b></div></div>
+    <p><b>Referencia:</b> ≥ 0,2. ${chipOK(r25.pd>=0.2)}</p>` });
+MODAL_BUILDERS['gs-dio'] = () => ({ title:'DIO · días de inventario',
+  body:`<p><b>Rotación:</b> CV ÷ Inv. promedio. <b>DIO:</b> 360 ÷ Rotación.</p>
+    <div class="mrow"><div><span>2025</span><code>${n0(c25.cv)} ÷ ${n0((c25.inv+c24.inv)/2)}</code><b>${n2(r25.rinv,2)}×</b><code>360 ÷ ${n2(r25.rinv,2)}</code><b>${dys(r25.dio)}</b></div>
+    <div><span>2024</span><code>${n0(c24.cv)} ÷ ${n0(c24.inv)}</code><b>${n2(r24.rinv,2)}×</b><code>360 ÷ ${n2(r24.rinv,2)}</code><b>${dys(r24.dio)}</b></div></div>
+    <p>${chipOK(r25.dio<=r24.dio,'Cumple objetivo')} ${n0(Math.abs(r25.dio-r24.dio))} días ${r25.dio<r24.dio?'menos':'más'}.</p>` });
+MODAL_BUILDERS['gs-dso'] = () => ({ title:'DSO · días de cobro',
+  body:`<p><b>Rotación:</b> (Ventas × 25 %) ÷ CxC promedio. <b>DSO:</b> 360 ÷ Rotación.</p>
+    <div class="mrow"><div><span>2025</span><code>(${n0(c25.ing)} × 25 %) ÷ ${n0((c25.cxc+c24.cxc)/2)}</code><b>${n2(r25.rcxc,2)}×</b><code>360 ÷ ${n2(r25.rcxc,2)}</code><b>${dys(r25.dso)}</b></div>
+    <div><span>2024</span><code>(${n0(c24.ing)} × 25 %) ÷ ${n0(c24.cxc)}</code><b>${n2(r24.rcxc,2)}×</b><code>360 ÷ ${n2(r24.rcxc,2)}</code><b>${dys(r24.dso)}</b></div></div>
+    <p>${chipOK(r25.dso<=r24.dso,'Cumple objetivo')} ${n0(Math.abs(r25.dso-r24.dso))} días ${r25.dso<r24.dso?'menos':'más'}.</p>` });
+MODAL_BUILDERS['gs-dpo'] = () => ({ title:'DPO · días de pago',
+  body:`<p><b>Rotación:</b> CV ÷ CxP promedio. <b>DPO:</b> 360 ÷ Rotación.</p>
+    <div class="mrow"><div><span>2025</span><code>${n0(c25.cv)} ÷ ${n0((c25.cxp+c24.cxp)/2)}</code><b>${n2(r25.rcxp,2)}×</b><code>360 ÷ ${n2(r25.rcxp,2)}</code><b>${dys(r25.dpo)}</b></div>
+    <div><span>2024</span><code>${n0(c24.cv)} ÷ ${n0(c24.cxp)}</code><b>${n2(r24.rcxp,2)}×</b><code>360 ÷ ${n2(r24.rcxp,2)}</code><b>${dys(r24.dpo)}</b></div></div>
+    <p>${chipOK(r25.dpo>=r24.dpo,'Cumple objetivo')} ${n0(Math.abs(r25.dpo-r24.dpo))} días ${r25.dpo>r24.dpo?'más':'menos'}.</p>` });
+MODAL_BUILDERS['gs-co'] = () => ({ title:'Ciclo operativo (DIO + DSO)',
+  body:`<div class="mrow"><div><span>2025</span><code>${n0(r25.dio)} + ${n0(r25.dso)}</code><b>${dys(r25.co)}</b></div>
+    <div><span>2024</span><code>${n0(r24.dio)} + ${n0(r24.dso)}</code><b>${dys(r24.co)}</b></div></div>` });
+MODAL_BUILDERS['gs-cce'] = () => ({ title:'Ciclo de conversión de efectivo (CCE)',
+  body:`<p><b>Fórmula:</b> DIO + DSO − DPO</p>
+    <div class="mrow"><div><span>2025</span><code>${n0(r25.dio)} + ${n0(r25.dso)} − ${n0(r25.dpo)}</code><b>${dys(r25.cce)}</b></div>
+    <div><span>2024</span><code>${n0(r24.dio)} + ${n0(r24.dso)} − ${n0(r24.dpo)}</code><b>${dys(r24.cce)}</b></div></div>
+    <p><b>Lectura CPCC.</b> La empresa tarda ${n0(r25.cce)} días en recuperar la caja. Un CCE positivo implica necesidad de financiamiento de corto plazo.</p>` });
+MODAL_BUILDERS['gs-rio'] = () => ({ title:'Rotación de inventarios',
+  body:`<div class="mrow"><div><span>2025</span><code>${n0(c25.cv)} ÷ ${n0((c25.inv+c24.inv)/2)}</code><b>${n2(r25.rinv,2)}×</b></div>
+    <div><span>2024</span><code>${n0(c24.cv)} ÷ ${n0(c24.inv)}</code><b>${n2(r24.rinv,2)}×</b></div></div>` });
+MODAL_BUILDERS['gs-rcxc'] = () => ({ title:'Rotación de CxC',
+  body:`<div class="mrow"><div><span>2025</span><code>(${n0(c25.ing)} × 25 %) ÷ ${n0((c25.cxc+c24.cxc)/2)}</code><b>${n2(r25.rcxc,2)}×</b></div>
+    <div><span>2024</span><code>(${n0(c24.ing)} × 25 %) ÷ ${n0(c24.cxc)}</code><b>${n2(r24.rcxc,2)}×</b></div></div>` });
+MODAL_BUILDERS['gs-rcxp'] = () => ({ title:'Rotación de CxP',
+  body:`<div class="mrow"><div><span>2025</span><code>${n0(c25.cv)} ÷ ${n0((c25.cxp+c24.cxp)/2)}</code><b>${n2(r25.rcxp,2)}×</b></div>
+    <div><span>2024</span><code>${n0(c24.cv)} ÷ ${n0(c24.cxp)}</code><b>${n2(r24.rcxp,2)}×</b></div></div>` });
+MODAL_BUILDERS['gs-rta'] = () => ({ title:'Rotación de activos totales',
+  body:`<p><b>Referencia:</b> > 0,5. ${chipOK(r25.rta>0.5)}</p>
+    <div class="mrow"><div><span>2025</span><code>${n0(c25.ing)} ÷ ${n0((c25.TA+c24.TA)/2)}</code><b>${n2(r25.rta,2)}×</b></div>
+    <div><span>2024</span><code>${n0(c24.ing)} ÷ ${n0(c24.TA)}</code><b>${n2(r24.rta,2)}×</b></div></div>` });
+MODAL_BUILDERS['gs-rtf'] = () => ({ title:'Rotación de activos fijos',
+  body:`<p><b>Referencia:</b> > 0,5. ${chipOK(r25.rtf>0.5)}</p>
+    <div class="mrow"><div><span>2025</span><code>${n0(c25.ing)} ÷ ${n0((c25.ANC+c24.ANC)/2)}</code><b>${n2(r25.rtf,2)}×</b></div>
+    <div><span>2024</span><code>${n0(c24.ing)} ÷ ${n0(c24.ANC)}</code><b>${n2(r24.rtf,2)}×</b></div></div>` });
+MODAL_BUILDERS['gs-rtc'] = () => ({ title:'Rotación de activos corrientes',
+  body:`<div class="mrow"><div><span>2025</span><code>${n0(c25.ing)} ÷ ${n0((c25.AC+c24.AC)/2)}</code><b>${n2(r25.rtc,2)}×</b></div>
+    <div><span>2024</span><code>${n0(c24.ing)} ÷ ${n0(c24.AC)}</code><b>${n2(r24.rtc,2)}×</b></div></div>` });
+MODAL_BUILDERS['gs-rct'] = () => ({ title:'Rotación de capital de trabajo',
+  body:`<div class="mrow"><div><span>2025</span><code>${n0(c25.ing)} ÷ ${n0(r25.ctno)}</code><b>${n2(r25.rct,2)}×</b></div>
+    <div><span>2024</span><code>${n0(c24.ing)} ÷ ${n0(r24.ctno)}</code><b>${n2(r24.rct,2)}×</b></div></div>` });
+MODAL_BUILDERS['sv-sg'] = () => ({ title:'Solvencia general',
+  body:`<p><b>Fórmula:</b> TA ÷ TP</p>
+    <div class="mrow"><div><span>2025</span><code>${n0(c25.TA)} ÷ ${n0(c25.TP)}</code><b>${n2(r25.sg,2)}×</b></div>
+    <div><span>2024</span><code>${n0(c24.TA)} ÷ ${n0(c24.TP)}</code><b>${n2(r24.sg,2)}×</b></div></div>
+    <p><b>Referencia:</b> > 1,5. ${chipOK(r25.sg>1.5)}</p>` });
+MODAL_BUILDERS['sv-elp'] = () => ({ title:'Endeudamiento a largo plazo',
+  body:`<p><b>Fórmula:</b> PNC ÷ Patrimonio</p>
+    <div class="mrow"><div><span>2025</span><code>${n0(c25.PNC)} ÷ ${n0(c25.PAT)}</code><b>${n2(r25.elp,2)}×</b></div>
+    <div><span>2024</span><code>${n0(c24.PNC)} ÷ ${n0(c24.PAT)}</code><b>${n2(r24.elp,2)}×</b></div></div>
+    <p><b>Referencia:</b> < 0,5. ${chipOK(r25.elp<0.5)}</p>` });
+MODAL_BUILDERS['sv-et'] = () => ({ title:'Endeudamiento total',
+  body:`<p><b>Fórmula:</b> TP ÷ TA</p>
+    <div class="mrow"><div><span>2025</span><code>${n0(c25.TP)} ÷ ${n0(c25.TA)}</code><b>${pct(r25.et,2)}</b></div>
+    <div><span>2024</span><code>${n0(c24.TP)} ÷ ${n0(c24.TA)}</code><b>${pct(r24.et,2)}</b></div></div>
+    <p><b>Rango:</b> 40 %–60 %. ${chipOK(r25.et>=0.4 && r25.et<=0.6)}</p>` });
+MODAL_BUILDERS['sv-apat'] = () => ({ title:'Apalancamiento patrimonial',
+  body:`<p><b>Fórmula:</b> TP ÷ Patrimonio</p>
+    <div class="mrow"><div><span>2025</span><code>${n0(c25.TP)} ÷ ${n0(c25.PAT)}</code><b>${n2(r25.apat,2)}×</b></div>
+    <div><span>2024</span><code>${n0(c24.TP)} ÷ ${n0(c24.PAT)}</code><b>${n2(r24.apat,2)}×</b></div></div>
+    <p><b>Referencia:</b> ≤ 1. ${chipOK(r25.apat<=1)}</p>` });
+MODAL_BUILDERS['sv-cob'] = () => ({ title:'Cobertura de intereses',
+  body:`<p><b>Fórmula:</b> EBIT ÷ Gastos financieros</p>
+    <div class="mrow"><div><span>2025</span><code>${n0(c25.UO)} ÷ ${n0(c25.gf)}</code><b>${n2(r25.cob,2)}×</b></div>
+    <div><span>2024</span><code>${n0(c24.UO)} ÷ ${n0(c24.gf)}</code><b>${n2(r24.cob,2)}×</b></div></div>
+    <p><b>Referencia:</b> ≥ 3. ${chipOK(r25.cob>=3)}</p>` });
+MODAL_BUILDERS['sv-dlp'] = () => ({ title:'Deuda LP / Activo total',
+  body:`<div class="mrow"><div><span>2025</span><code>${n0(c25.PNC)} ÷ ${n0(c25.TA)}</code><b>${n2(r25.dlp,2)}×</b></div>
+    <div><span>2024</span><code>${n0(c24.PNC)} ÷ ${n0(c24.TA)}</code><b>${n2(r24.dlp,2)}×</b></div></div>` });
+MODAL_BUILDERS['sv-af'] = () => ({ title:'Apalancamiento financiero',
+  body:`<div class="mrow"><div><span>2025</span><code>${n0(c25.TA)} ÷ ${n0(c25.PAT)}</code><b>${n2(r25.af,2)}×</b></div>
+    <div><span>2024</span><code>${n0(c24.TA)} ÷ ${n0(c24.PAT)}</code><b>${n2(r24.af,2)}×</b></div></div>` });
+MODAL_BUILDERS['sv-mb'] = () => ({ title:'Margen bruto',
+  body:`<div class="mrow"><div><span>2025</span><code>${n0(c25.UB)} ÷ ${n0(c25.ing)}</code><b>${pct(r25.mb,2)}</b></div>
+    <div><span>2024</span><code>${n0(c24.UB)} ÷ ${n0(c24.ing)}</code><b>${pct(r24.mb,2)}</b></div></div>` });
+MODAL_BUILDERS['sv-mo'] = () => ({ title:'Margen operativo',
+  body:`<div class="mrow"><div><span>2025</span><code>${n0(c25.UO)} ÷ ${n0(c25.ing)}</code><b>${pct(r25.mo,2)}</b></div>
+    <div><span>2024</span><code>${n0(c24.UO)} ÷ ${n0(c24.ing)}</code><b>${pct(r24.mo,2)}</b></div></div>
+    <p><b>Lectura CPCC.</b> El margen operativo cae ligeramente por mayores gastos de administración y otros gastos operativos.</p>` });
+MODAL_BUILDERS['sv-mn'] = () => ({ title:'Margen neto',
+  body:`<div class="mrow"><div><span>2025</span><code>${n0(c25.UN)} ÷ ${n0(c25.ing)}</code><b>${pct(r25.mn,2)}</b></div>
+    <div><span>2024</span><code>${n0(c24.UN)} ÷ ${n0(c24.ing)}</code><b>${pct(r24.mn,2)}</b></div></div>
+    <p><b>Lectura CPCC.</b> El margen neto sube con fuerza pese a la caída del operativo: el aporte de subsidiarias y menores gastos financieros explican la mejora.</p>` });
+MODAL_BUILDERS['sv-roa'] = () => ({ title:'ROA (promedios)',
+  body:`<div class="mrow"><div><span>2025</span><code>${n0(c25.UN)} ÷ ${n0((c25.TA+c24.TA)/2)}</code><b>${pct(r25.roa,2)}</b></div>
+    <div><span>2024</span><code>${n0(c24.UN)} ÷ ${n0(c24.TA)}</code><b>${pct(r24.roa,2)}</b></div></div>` });
+MODAL_BUILDERS['sv-roe'] = () => ({ title:'ROE (promedios)',
+  body:`<div class="mrow"><div><span>2025</span><code>${n0(c25.UN)} ÷ ${n0((c25.PAT+c24.PAT)/2)}</code><b>${pct(r25.roe,2)}</b></div>
+    <div><span>2024</span><code>${n0(c24.UN)} ÷ ${n0(c24.PAT)}</code><b>${pct(r24.roe,2)}</b></div></div>` });
+MODAL_BUILDERS['kpi-roe']  = MODAL_BUILDERS['sv-roe'];
+MODAL_BUILDERS['kpi-mn']   = MODAL_BUILDERS['sv-mn'];
+MODAL_BUILDERS['kpi-lc']   = MODAL_BUILDERS['lq-lc'];
+MODAL_BUILDERS['kpi-et']   = MODAL_BUILDERS['sv-et'];
+MODAL_BUILDERS['kpi-cce']  = MODAL_BUILDERS['gs-cce'];
+MODAL_BUILDERS['kpi-ktno'] = MODAL_BUILDERS['cw-ktno'];
+
+/* ═══════════════════════════════════════════════════════════════════════
+   SECCIÓN JS 15 — NAVEGACIÓN Y MENÚ
+   ═══════════════════════════════════════════════════════════════════════ */
+const TABS = [
+  ['s-av','Análisis vertical y horizontal','M3 3h7v7H3zM14 3h7v7h-7zM14 14h7v7h-7zM3 14h7v7H3z'],
+  ['s-dp','Análisis DuPont','M12 2v20M2 12h20M5 5l14 14M19 5L5 19'],
+  ['s-ct','Capital de trabajo','M3 12h18M3 6h18M3 18h18'],
+  ['s-lq','Ratios de liquidez','M12 3s6 6 6 11a6 6 0 11-12 0c0-5 6-11 6-11z'],
+  ['s-gs','Ratios de gestión','M12 2a10 10 0 100 20 10 10 0 000-20zM12 6v6l4 2'],
+  ['s-sv','Ratios de solvencia y rentabilidad','M12 2l9 4v6c0 5-4 9-9 10-5-1-9-5-9-10V6z'],
+  ['s-db','Dashboard','M3 12l9-9 9 9M5 10v10h14V10'],
+  ['s-cmi','Cuadro de Mando Integral (CMI)','M12 2a10 10 0 100 20 10 10 0 000-20zM12 6a6 6 0 100 12 6 6 0 000-12zM12 10a2 2 0 100 4 2 2 0 000-4z']
+];
+function buildNav(){
+  document.getElementById('nav').innerHTML = TABS.map(([id,label,path],i)=>`
+    <button class="navbtn" data-sec="${id}" ${i===0?'aria-current="page"':''} type="button">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${path}"/></svg>
+      <span>${label}</span>
+    </button>`).join('');
+  document.querySelectorAll('.navbtn').forEach(b=>{
+    b.onclick = ()=>{ showSection(b.dataset.sec); document.body.classList.remove('drawer'); };
+  });
+}
+function showSection(id){
+  document.querySelectorAll('.sec').forEach(s=>s.classList.toggle('on', s.id===id));
+  document.querySelectorAll('.navbtn').forEach(b=>b.setAttribute('aria-current', b.dataset.sec===id?'page':'false'));
+  const tab = TABS.find(t=>t[0]===id);
+  document.getElementById('hTitle').textContent = tab ? tab[1] : '';
+  document.body.classList.toggle('in-cmi', id==='s-cmi');   /* en el CMI se oculta Restablecer */
+  if(id==='s-dp' && r25){ drawDupontChart(effects()); }
+  if(id==='s-lq') drawLqChart();
+  if(id==='s-gs') drawGsChart();
+  if(id==='s-sv') drawSvCharts();
+  if(id==='s-db'){ renderKPIs(); renderAdvInputs(); bindChartSelectors(); drawDashCharts(); }
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   SECCIÓN JS 16 — SIMULADOR
+   ═══════════════════════════════════════════════════════════════════════ */
+function setBadge(isSim){
+  const b = document.getElementById('badge');
+  b.textContent = isSim ? 'Simulación activa' : 'Datos 2025';
+  b.className = 'badge' + (isSim?' sim':'');
+}
+function scheduleRender(){
+  clearTimeout(renderTimer);
+  renderTimer = setTimeout(()=>{ recompute(); renderAll(); setBadge(isSimActive()); }, 120);
+}
+function isSimActive(){
+  for(const k of Object.keys(D25)){ if(Math.abs((S[k]||0) - (D25[k]||0)) > 0.5) return true; }
+  return PCR !== 25;
+}
+function bindSimulator(){
+  document.querySelectorAll('[data-sim]').forEach(inp=>{
+    inp.oninput = ()=>{
+      const k = inp.dataset.sim;
+      const pctv = parseFloat(inp.value)||0;
+      document.getElementById('v-'+k).textContent = pctv+' %';
+      if(k==='fin'){
+        S.ofc = ORIG.y2025.ofc * (1+pctv/100);
+        S.ofl = ORIG.y2025.ofl * (1+pctv/100);
+      } else {
+        S[k] = ORIG.y2025[k] * (1+pctv/100);
+      }
+      scheduleRender();
+    };
+  });
+  const pcrInp = document.getElementById('pcr');
+  if(pcrInp){
+    pcrInp.oninput = ()=>{
+      PCR = Math.min(100, Math.max(1, parseFloat(pcrInp.value)||25));
+      scheduleRender();
+    };
+  }
+}
+function resetAll(){
+  S = {...D25}; PCR = 25;
+  document.querySelectorAll('[data-sim]').forEach(inp=>{
+    inp.value = 0;
+    const el = document.getElementById('v-'+inp.dataset.sim);
+    if(el) el.textContent = '0 %';
+  });
+  const pcrInp = document.getElementById('pcr'); if(pcrInp) pcrInp.value = 25;
+  document.querySelectorAll('[data-adv]').forEach(inp=>{ inp.value = D25[inp.dataset.adv] || 0; });
+  recompute(); renderAll(); setBadge(false);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   SECCIÓN JS 17 — RENDER GLOBAL
+   ═══════════════════════════════════════════════════════════════════════ */
+function renderAll(){
+  renderAV(); renderDP(); renderCT(); renderLQ(); renderGS(); renderSV(); renderDB();
+  bindSimulator();
+}
+function bindGlobalCards(){
+  document.body.addEventListener('click', e=>{
+    const card = e.target.closest('[data-modal]');
+    if(!card) return;
+    e.preventDefault();
+    const key = card.dataset.modal;
+    const builder = MODAL_BUILDERS[key];
+    if(!builder) return;
+    const m = builder();
+    openModal(m.body, m.title);
+  });
+  document.body.addEventListener('keydown', e=>{
+    if((e.key==='Enter'||e.key===' ') && e.target.matches('[data-modal]')){
+      e.preventDefault(); e.target.click();
+    }
+  });
+  const dlg = document.getElementById('modal');
+  document.getElementById('mx').onclick = ()=>dlg.close();
+  document.getElementById('mc').onclick = ()=>dlg.close();
+  dlg.addEventListener('click', e=>{ if(e.target===dlg) dlg.close(); });
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   SECCIÓN JS 18 — INICIALIZACIÓN
+   ═══════════════════════════════════════════════════════════════════════ */
+function init(){
+  buildNav();
+  bindGlobalCards();
+  bindPrint();
+
+  /* ── BOTÓN COLAPSAR / EXPANDIR ───────────────────────────────────────
+     IMPORTANTE: la flecha cambia según el estado:
+       « → significa "colapsar" (sidebar expandido)
+       » → significa "expandir" (sidebar colapsado)
+     El botón NUNCA se oculta (ver CSS sección 2).                     */
+  document.getElementById('collapse').onclick = ()=>{
+    document.body.classList.toggle('collapsed');
+    const btn = document.getElementById('collapse');
+    const isCollapsed = document.body.classList.contains('collapsed');
+    btn.textContent = isCollapsed ? '»' : '«';
+    btn.setAttribute('aria-label', isCollapsed ? 'Expandir menú' : 'Colapsar menú');
+  };
+
+  document.getElementById('hamb').onclick = ()=>{ document.body.classList.toggle('drawer'); };
+  document.getElementById('ov').onclick = ()=>{ document.body.classList.remove('drawer'); };
+  document.getElementById('resetTop').onclick = resetAll;
+  document.getElementById('resetSide').onclick = resetAll;
+
+  document.addEventListener('change', e=>{
+    const sel = e.target.closest('[data-cid]');
+    if(!sel) return;
+    const id = sel.dataset.cid;
+    if(id==='chLq') drawLqChart();
+    else if(id==='chGs') drawGsChart();
+    else if(id==='chSvSolv'||id==='chSvRent') drawSvCharts();
+    else if(id.startsWith('ch')) drawDashCharts();
+  });
+
+  recompute();
+  renderAll();
+  setBadge(false);
+  showSection('s-av');
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════
+   SECCIÓN JS 19 — IMPRESIÓN
+   • "Esta sección": imprime solo lo que se ve en pantalla.
+   • "Informe completo": muestra todas las secciones, dibuja todos los
+     gráficos y abre el diálogo de impresión. Al terminar, restaura la vista.
+   ═══════════════════════════════════════════════════════════════════════ */
+let printMode = 'section';
+function currentSecId(){ const s=document.querySelector('.sec.on'); return s ? s.id : 's-av'; }
+function currentTitle(){ const t=TABS.find(x=>x[0]===currentSecId()); return t ? t[1] : ''; }
+function drawAllCharts(){
+  if(typeof Chart==='undefined') return;
+  try{
+    Chart.defaults.animation = false;                 // sin animación: el gráfico sale completo al imprimir
+    if(r25) drawDupontChart(effects());
+    drawLqChart(); drawGsChart(); drawSvCharts();
+    renderKPIs(); renderAdvInputs(); bindChartSelectors(); drawDashCharts();
+  }catch(e){ console.warn('Gráficos para impresión:', e); }
+}
+function chartsToImages(){            /* los <canvas> salen en blanco al imprimir: se usa su imagen */
+  clearPrintImages();
+  document.querySelectorAll('.sec canvas').forEach(cv=>{
+    if(!cv.width || !cv.offsetParent) return;
+    try{
+      const img = new Image();
+      img.className = 'print-chart'; img.alt = 'Gráfico';
+      img.src = cv.toDataURL('image/png');
+      cv.parentNode.insertBefore(img, cv.nextSibling);
+    }catch(e){}
+  });
+}
+let imgTimer = null;
+function scheduleChartImages(){ clearTimeout(imgTimer); imgTimer = setTimeout(chartsToImages, 450); }
+function whenImagesReady(){
+  return Promise.all([...document.querySelectorAll('img.print-chart')].map(i=> i.decode ? i.decode().catch(()=>{}) : Promise.resolve()));
+}
+function clearPrintImages(){ document.querySelectorAll('img.print-chart').forEach(i=>i.remove()); }
+function resizeCharts(){ Object.values(CHARTS).forEach(c=>{ try{ if(c&&c.resize) c.resize(); }catch(e){} }); }
+function setPrintMeta(){
+  const m = document.getElementById('printMeta'); if(!m) return;
+  const fecha = new Date().toLocaleDateString('es-PE',{day:'2-digit',month:'long',year:'numeric'});
+  const alcance = document.body.classList.contains('print-all') ? 'Informe completo' : currentTitle();
+  m.textContent = 'Corporación Aceros Arequipa S.A. · ' + alcance + ' · Impreso el ' + fecha + (isSimActive() ? ' · Con simulación activa' : '');
+}
+function doPrint(mode){
+  printMode = mode;
+  document.body.classList.toggle('print-all', mode==='all');
+  if(mode==='all'){
+    document.getElementById('hTitle').textContent = 'Informe completo — Análisis financiero 2025';
+    drawAllCharts();
+  }
+  setPrintMeta();
+  setTimeout(()=>{ chartsToImages(); whenImagesReady().then(()=>window.print()); }, mode==='all' ? 700 : 250);
+}
+window.addEventListener('beforeprint', ()=>{ setPrintMeta(); if(!document.querySelector('img.print-chart')) chartsToImages(); });   // también cubre Ctrl+P
+window.addEventListener('afterprint', ()=>{
+  document.body.classList.remove('print-all');
+  document.getElementById('hTitle').textContent = currentTitle();
+  clearPrintImages(); resizeCharts(); scheduleChartImages();
+});
+function registerChartSnapshots(){
+  if(typeof Chart==='undefined') return;
+  Chart.register({ id:'printSnapshot', afterRender(){ scheduleChartImages(); } });   // deja lista la imagen de cada gráfico
+}
+function bindPrint(){
+  registerChartSnapshots();
+  const btn = document.getElementById('printBtn'), menu = document.getElementById('printMenu');
+  const close = ()=>{ menu.hidden = true; btn.setAttribute('aria-expanded','false'); };
+  btn.onclick = e=>{ e.stopPropagation(); const open = menu.hidden; menu.hidden = !open; btn.setAttribute('aria-expanded', String(open)); };
+  menu.querySelectorAll('[data-print]').forEach(b=>{ b.onclick = ()=>{ close(); doPrint(b.dataset.print); }; });
+  document.addEventListener('click', e=>{ if(!menu.hidden && !e.target.closest('.printwrap')) close(); });
+  document.addEventListener('keydown', e=>{ if(e.key==='Escape') close(); });
+}
+
+if(document.readyState==='loading'){
+  document.addEventListener('DOMContentLoaded', init);
+} else {
+  init();
+}
+</script>
+
+<!-- ══════════════════════════════════════════════════════════════════════
+     JS DEL CUADRO DE MANDO INTEGRAL (CMI)
+     ══════════════════════════════════════════════════════════════════════ -->
+<script>
+  const kpiDatabase = {
+    card_ingresos: {
+      persp: "Perspectiva Clientes / Crecimiento",
+      badge: "Óptimo",
+      badgeClass: "b-green",
+      title: "Ingresos de Actividades Ordinarias",
+      v24: "S/ 4,369,096",
+      v25: "S/ 4,750,922",
+      varText: "+8.7% (+381,826)",
+      varClass: "pos",
+      b24: 87.4,
+      b25: 95.0,
+      formula: "(Ventas 2025 / Ventas 2024) - 1  |  Nota 22 (Fila 57)",
+      causal: "Nivel 3 (Efecto 2 → Efecto Final): Es impulsado por una mayor rotación de inventarios (DIO -18.1 días) y transmite +S/ 381,826 mil de ventas al nivel Financiero sin sacrificar margen bruto (14.3%).",
+      interp: "Las ventas crecieron en S/ 381,826 mil (+8.7%) en 2025. Lo más destacable es la calidad del crecimiento: se mantuvo intacto el margen bruto en 14.3% y las cuentas por cobrar comerciales disminuyeron 3.1%, confirmando ventas cobradas en efectivo y no infladas por crédito blando.",
+      action: "Desagregar en reportes internos cuánto del +8.7% provino de mayor volumen despachado (toneladas) frente a recuperación de precios internacionales del acero."
+    },
+    card_utilidad: {
+      persp: "Perspectiva Financiera — Resultado Final",
+      badge: "Óptimo",
+      badgeClass: "b-green",
+      title: "Utilidad Neta del Ejercicio",
+      v24: "S/ 196,493",
+      v25: "S/ 295,928",
+      varText: "+50.6% (+99,435)",
+      varClass: "pos",
+      b24: 60.0,
+      b25: 90.4,
+      formula: "Utilidad antes de Impuestos (S/ 395,973) - Impuesto (S/ 100,045)",
+      causal: "Nivel 4 (Efecto Final): Sintetiza el crecimiento de ventas (+8.7%), la reducción de intereses (-10.3%) por menor deuda y el fuerte aporte de subsidiarias (+S/ 65,223 mil).",
+      interp: "La utilidad neta aumentó en S/ 99,435 mil (+50.6%), elevando la utilidad básica por acción de S/ 0.182 a S/ 0.274. Sin embargo, el 76.0% de este incremento (+S/ 75,591 mil) provino del giro positivo en subsidiarias y asociadas (de -S/ 10,368 mil a +S/ 65,223 mil), mientras la operación propia aportó el 17.6% (+S/ 17,467 mil).",
+      action: "No depender exclusivamente de dividendos/participación de subsidiarias en 2026; corregir el gasto administrativo (+20.1%) para que la operación siderúrgica lidere la expansión neta."
+    },
+    card_roe: {
+      persp: "Perspectiva Financiera — Rentabilidad Accionista",
+      badge: "Óptimo",
+      badgeClass: "b-green",
+      title: "ROE (Retorno sobre el Patrimonio)",
+      v24: "7.0%",
+      v25: "9.8% (10.1% prom.)",
+      varText: "+2.8 pp",
+      varClass: "pos",
+      b24: 46.7,
+      b25: 65.3,
+      formula: "DuPont: Margen Neto (6.23%) × Rotación Activos (0.82x) × Apalancamiento (1.92x)",
+      causal: "Nivel 4 (Destino Final del CMI): Como señala la teoría del CMI, el ROE no se gestiona directamente; es la consecuencia de calibrar Procesos (rotación sube a 0.82x) y Clientes (margen neto sube a 6.23%).",
+      interp: "Según el análisis DuPont, el ROE subió de 7.0% a 9.8% (10.1% sobre patrimonio promedio) con alta calidad financiera: mejoró gracias a mayor margen neto (+1.7 pp) y mayor rotación de activos (+0.07x), mientras el apalancamiento se redujo de 2.06x a 1.92x. Es decir, la empresa ganó más asumiendo menor riesgo financiero.",
+      action: "Superar la barrera de doble dígito permanente (>11.0% ROE puntual) recuperando 0.3 pp de margen operativo."
+    },
+    card_cce: {
+      persp: "Perspectiva Procesos Internos — Caja Operativa",
+      badge: "Óptimo",
+      badgeClass: "b-green",
+      title: "Ciclo de Conversión de Efectivo (CCE)",
+      v24: "106.3 días",
+      v25: "83.8 días (90.7 prom.)",
+      varText: "-22.5 días",
+      varClass: "pos",
+      b24: 88.6,
+      b25: 69.8,
+      formula: "DIO (96.7 d) + DSO (32.5 d) - DPO (45.3 d)  |  Base 360 días",
+      causal: "Nivel 2 (Motor Operativo → Nivel 4 Financiero): Al acortar el ciclo en 22.5 días, liberó S/ 159,918 mil en KTNO, permitiendo amortizar S/ 353,307 mil de deuda financiera.",
+      interp: "Aceros Arequipa redujo en 22.5 días el tiempo que tarda cada sol invertido en inventarios en regresar como efectivo. Esta mejora se explica principalmente por la baja de 18.1 días en inventarios (DIO) y 4.0 días en cobranza (DSO), liberando S/ 159,918 mil de capital de trabajo operativo (KTNO).",
+      action: "Consolidar el CCE por debajo de 80 días llevando el DIO hacia 85 días y negociando 4–5 días adicionales de plazo con proveedores (DPO hacia 50 días)."
+    },
+    card_deuda: {
+      persp: "Perspectiva Financiera — Solvencia",
+      badge: "En Rango",
+      badgeClass: "b-green",
+      title: "Ratio de Endeudamiento Total",
+      v24: "51.5%",
+      v25: "47.8%",
+      varText: "-3.7 pp",
+      varClass: "pos",
+      b24: 51.5,
+      b25: 47.8,
+      formula: "Total Pasivos (S/ 2,759,257) / Total Activos (S/ 5,771,493)  |  Meta: 40%–60%",
+      causal: "Nivel 4 (Efecto de Procesos Internos): La caja liberada por la reducción de inventarios y mejor cobranza se destinó directamente a desapalancar el balance.",
+      interp: "El pasivo total se redujo en S/ 232,761 mil (-7.8%), impulsado por la amortización de S/ 353,307 mil en deuda financiera (corriente y no corriente). Hoy el 52.2% de los activos se financia con patrimonio propio y el 47.8% con terceros, ubicándose cómodamente dentro del rango objetivo de 40%–60%.",
+      action: "Aprovechar la holgura de solvencia (2.09x activos sobre pasivos) y menor carga financiera para evaluar CAPEX de modernización tecnológica."
+    },
+    fin_roa: {
+      persp: "Perspectiva Financiera — Eficiencia de Activos",
+      badge: "Óptimo",
+      badgeClass: "b-green",
+      title: "ROA (Retorno sobre Activos Totales)",
+      v24: "3.4%",
+      v25: "5.1%",
+      varText: "+1.7 pp",
+      varClass: "pos",
+      b24: 34.0,
+      b25: 51.0,
+      formula: "Utilidad Neta (S/ 295,928) / Activo Total (S/ 5,771,493)",
+      causal: "Nivel 4 (Efecto Final): Combina la mayor rotación industrial (0.82x) del Nivel 2 con el incremento de utilidad neta (+50.6%).",
+      interp: "Por cada sol invertido en activos totales, la empresa generó 5.13 céntimos de utilidad neta en 2025 frente a 3.38 céntimos en 2024 (+51.7% relativo). Se logró generar S/ 381,826 mil más de ventas con una base de activos ligeramente menor (-0.7%, S/ 5,771,493 mil).",
+      action: "Mantener disciplina en inversiones de capital fijo (Propiedad, Planta y Equipo representa el 52.5% del activo total)."
+    },
+    fin_mneto: {
+      persp: "Perspectiva Financiera — Rentabilidad",
+      badge: "Óptimo",
+      badgeClass: "b-green",
+      title: "Margen Neto",
+      v24: "4.5%",
+      v25: "6.2%",
+      varText: "+1.7 pp",
+      varClass: "pos",
+      b24: 45.0,
+      b25: 62.0,
+      formula: "Utilidad Neta (S/ 295,928) / Ingresos Ordinarios (S/ 4,750,922)",
+      causal: "Nivel 4 (Efecto Final): Recibe el impulso de ventas (+8.7%) y subsidiarias (+S/ 65,223 mil), aunque fue parcialmente frenado por el alza de gastos administrativos en el Nivel 1.",
+      interp: "Por cada S/ 1.00 vendido, Aceros Arequipa retuvo 6.23 céntimos de ganancia neta (1.73 céntimos más que en 2024). Además del aporte de subsidiarias (+S/ 65,223 mil), ayudaron la ganancia por diferencia de cambio (+S/ 11,850 mil), el ahorro en gastos financieros (-10.3%) y una menor tasa efectiva de impuesto (25.3% vs. 30.6% en 2024).",
+      action: "Monitorear exposición cambiaria y resultados de subsidiarias, ya que los ingresos no operativos explicaron gran parte de la expansión del margen final."
+    },
+    fin_mop: {
+      persp: "Perspectiva Financiera — Rentabilidad Core",
+      badge: "Vigilancia",
+      badgeClass: "b-amber",
+      title: "Margen Operativo (EBIT)",
+      v24: "8.7%",
+      v25: "8.4%",
+      varText: "-0.3 pp",
+      varClass: "warn",
+      b24: 87.0,
+      b25: 84.0,
+      formula: "Ganancia Operativa (S/ 397,435) / Ingresos Ordinarios (S/ 4,750,922)",
+      causal: "Transmisión Nivel 1 → Nivel 4: Muestra exactamente cómo la alerta en Gastos Administrativos (+20.1% en Nivel 1) erosiona el margen operativo core pese a que el Margen Bruto se mantuvo estable.",
+      interp: "Aunque la utilidad operativa creció +4.6% en soles (+S/ 17,467 mil), el margen operativo retrocedió de 8.70% a 8.37%. Esto ocurre porque los Gastos de Administración subieron +20.1% (+S/ 21,230 mil) y Otros Gastos Operativos casi se duplicaron (+97.3%, +S/ 16,718 mil), absorbiendo el 68% de la ganancia bruta adicional.",
+      action: "Auditar los gastos administrativos (Nota 25) y otros gastos operativos (Nota 27) para evitar erosión del margen operativo en 2026."
+    },
+    fin_mbruto: {
+      persp: "Perspectiva Financiera — Margen Industrial",
+      badge: "Estable",
+      badgeClass: "b-green",
+      title: "Margen Bruto",
+      v24: "14.3%",
+      v25: "14.3%",
+      varText: "0.0 pp (+8.7% S/)",
+      varClass: "pos",
+      b24: 71.5,
+      b25: 71.5,
+      formula: "Ganancia Bruta (S/ 680,963) / Ingresos Ordinarios (S/ 4,750,922)",
+      causal: "Nivel 2 (Procesos) → Nivel 4 (Financiera): La estabilidad en 14.3% confirma que no hubo 'fricción en el motor' (sobrecostos o mermas extraordinarias que comprimieran el margen industrial).",
+      interp: "El costo de ventas creció exactamente al mismo ritmo que los ingresos (+8.75% vs. +8.74%), manteniendo el margen bruto invariable en 14.33% (14.34% en 2024). Esto refleja adecuada capacidad de traslado de costos de materia prima/chatarra a precios de venta. (Nota: el Excel tenía un error al dividir entre costo de ventas y mostrar 16.7%).",
+      action: "Proteger el spread metálico mediante compras oportunas de insumos y eficiencia energética en acería."
+    },
+    fin_liq: {
+      persp: "Perspectiva Financiera — Liquidez",
+      badge: "Óptimo",
+      badgeClass: "b-green",
+      title: "Razón Corriente y Prueba Ácida",
+      v24: "1.32x / 0.66x",
+      v25: "1.42x / 0.75x",
+      varText: "+0.10x / +0.09x",
+      varClass: "pos",
+      b24: 66.0,
+      b25: 71.0,
+      formula: "Activo Corriente (S/ 2,329,085) / Pasivo Corriente (S/ 1,642,524)",
+      causal: "Nivel 2 (CCE) → Nivel 4 (Liquidez): La aceleración en inventarios y cobranzas elevó la caja disponible en +31.2% (hasta S/ 609,389 mil).",
+      interp: "La liquidez general subió a 1.42x y el Capital de Trabajo Neto (CTNO) aumentó en S/ 108,293 mil (hasta S/ 686,561 mil). Más importante aún: la caja y equivalentes creció +31.2% (hasta S/ 609,389 mil), cubriendo por sí sola el 37.1% de todo el pasivo corriente (razón de efectivo subió de 0.26x a 0.37x).",
+      action: "Evaluar inversión de excedentes de caja (S/ 609,389 mil) en instrumentos de corto plazo o prepago selectivo de deuda cara."
+    },
+    fin_cob: {
+      persp: "Perspectiva Financiera — Capacidad de Pago",
+      badge: "Óptimo",
+      badgeClass: "b-green",
+      title: "Cobertura de Intereses",
+      v24: "3.19x",
+      v25: "3.72x",
+      varText: "+0.53x",
+      varClass: "pos",
+      b24: 63.8,
+      b25: 74.4,
+      formula: "Utilidad Operativa EBIT (S/ 397,435) / Gastos Financieros (S/ 106,879)",
+      causal: "Nivel 4 (Efecto de Desapalancamiento): Menor deuda financiera reducida con caja operativa genera ahorro en intereses (+10.3%) y mayor holgura.",
+      interp: "La utilidad operativa cubre 3.72 veces los gastos financieros anuales (frente a 3.19x en 2024). Esta mejora responde al doble efecto de mayor EBIT (+4.6%) y reducción de gastos financieros (-10.3%, ahorro de S/ 12,224 mil tras amortizar deuda).",
+      action: "Mantener la cobertura por encima de 3.5x para conservar calificaciones crediticias favorables y bajo costo de fondeo."
+    },
+    cli_dso: {
+      persp: "Perspectiva Clientes — Gestión de Cobranza",
+      badge: "Óptimo",
+      badgeClass: "b-green",
+      title: "Período Medio de Cobro (DSO)",
+      v24: "36.4 días",
+      v25: "32.5 días (33.0 prom.)",
+      varText: "-4.0 días",
+      varClass: "pos",
+      b24: 72.8,
+      b25: 65.0,
+      formula: "(Cuentas por Cobrar Comerciales S/ 428,345 / Ventas S/ 4,750,922) × 360",
+      causal: "Nivel 3 (Clientes → Procesos/Caja): Clientes satisfechos y sin reclamos de facturación/entrega pagan 4 días más rápido, acelerando el Ciclo de Efectivo.",
+      interp: "La empresa cobra sus ventas comerciales en promedio cada 32.5 días (4 días más rápido que en 2024). Pese a vender S/ 381,826 mil más, el saldo de cuentas por cobrar comerciales bajó en S/ 13,780 mil (-3.1%), reflejando alta disciplina de crédito y cobranza. (Nota: si solo el 25% de ventas fuera a crédito como indica una anotación en el Excel, el DSO de cartera sería 131.9 días).",
+      action: "Incorporar en futuros reportes el desglose real de ventas al contado vs. crédito y la antigüedad de cartera vencida."
+    },
+    cli_cartera: {
+      persp: "Perspectiva Clientes — Riesgo Crediticio",
+      badge: "Óptimo",
+      badgeClass: "b-green",
+      title: "Peso de Cartera Comercial sobre Ventas",
+      v24: "10.1%",
+      v25: "9.0%",
+      varText: "-1.1 pp",
+      varClass: "pos",
+      b24: 67.3,
+      b25: 60.0,
+      formula: "Cuentas por Cobrar Comerciales (S/ 428,345) / Ventas (S/ 4,750,922)",
+      causal: "Nivel 3 (Clientes): Confirma que el crecimiento comercial de +8.7% es sano y no se compró otorgando plazos riesgosos.",
+      interp: "Al cierre de 2025, solo el 9.0% de las ventas anuales quedó pendiente de cobro (vs. 10.1% en 2024). Asimismo, las cuentas por cobrar a entidades relacionadas corrientes bajaron -21.3% (de S/ 174,363 mil a S/ 137,183 mil), reduciendo exposición de capital de trabajo.",
+      action: "Mantener el ratio cartera/ventas por debajo del 9.5% en ciclos de expansión comercial."
+    },
+    cli_gventas: {
+      persp: "Perspectiva Clientes — Eficiencia Comercial",
+      badge: "Óptimo",
+      badgeClass: "b-green",
+      title: "Gastos de Ventas y Distribución / Ingresos",
+      v24: "3.2%",
+      v25: "3.0%",
+      varText: "-0.1 pp (+4.1% S/)",
+      varClass: "pos",
+      b24: 64.0,
+      b25: 60.0,
+      formula: "Gastos de Ventas y Distribución (S/ 144,583) / Ingresos (S/ 4,750,922)",
+      causal: "Nivel 2 (Procesos Logísticos) → Nivel 3 (Clientes): La mejor planificación de inventarios redujo el costo comercial relativo por cada sol vendido.",
+      interp: "Los gastos comerciales y de distribución crecieron apenas +4.1% (+S/ 5,755 mil) frente a un aumento de +8.7% en ingresos, demostrando apalancamiento operativo comercial y eficiencia logística en la entrega de productos siderúrgicos.",
+      action: "Integrar indicadores de nivel de servicio (OTIF) y costo de flete por tonelada para complementar esta métrica contable."
+    },
+    proc_dio: {
+      persp: "Perspectiva Procesos Internos — Cadena de Suministro",
+      badge: "Óptimo",
+      badgeClass: "b-green",
+      title: "Días de Inventario (DIO)",
+      v24: "114.8 días",
+      v25: "96.7 días (101.1 prom.)",
+      varText: "-18.1 días",
+      varClass: "pos",
+      b24: 95.6,
+      b25: 80.6,
+      formula: "(Inventarios S/ 1,092,671 / Costo de Ventas S/ 4,069,959) × 360",
+      causal: "Nivel 2 (Eslabón Clave del Motor): Reducir 18.1 días el stock inmovilizado impulsó simultáneamente las ventas (+8.7% en Nivel 3) y la liberación de caja (-S/ 159.9M KTNO en Nivel 4).",
+      interp: "Es uno de los mayores logros operativos de 2025: los inventarios se redujeron en S/ 100,528 mil (-8.4%) mientras el volumen de costo de ventas subió +8.7%, recortando la permanencia de existencias en 18.1 días. Esto redujo riesgos de obsolescencia/precios y liberó caja inmediata.",
+      action: "Fijar meta 2026 de DIO en 85 días (lo que liberaría ~S/ 131,800 mil adicionales de efectivo operativo)."
+    },
+    proc_dpo: {
+      persp: "Perspectiva Procesos Internos — Abastecimiento",
+      badge: "Estable",
+      badgeClass: "b-green",
+      title: "Días de Pago a Proveedores (DPO)",
+      v24: "44.9 días",
+      v25: "45.3 días (43.3 prom.)",
+      varText: "+0.4 días",
+      varClass: "pos",
+      b24: 74.8,
+      b25: 75.5,
+      formula: "(Cuentas por Pagar Comerciales S/ 512,650 / Costo Ventas S/ 4,069,959) × 360",
+      causal: "Nivel 2 (Procesos de Abastecimiento): Mantiene el financiamiento espontáneo de proveedores en 45.3 días sin tensionar la cadena de suministro.",
+      interp: "El plazo promedio de pago a proveedores se mantuvo estable en 45.3 días (creciendo +9.8% en saldo a S/ 512,650 mil, alineado con el aumento de +8.7% en costo de ventas). Los proveedores financian cerca del 47% de los inventarios de la compañía sin costo financiero explícito.",
+      action: "Evaluar negociación de extensión a 50 días con proveedores estratégicos sin perder descuentos por pronto pago."
+    },
+    proc_ktno: {
+      persp: "Perspectiva Procesos Internos — Capital Operativo",
+      badge: "Óptimo",
+      badgeClass: "b-green",
+      title: "KTNO (Capital de Trabajo Neto Operativo)",
+      v24: "S/ 1,168,284",
+      v25: "S/ 1,008,366",
+      varText: "-13.7% (-159,918)",
+      varClass: "pos",
+      b24: 93.5,
+      b25: 80.7,
+      formula: "CxC Comerciales (428,345) + Inventarios (1,092,671) - CxP Comerciales (512,650)",
+      causal: "Puente Nivel 2 → Nivel 4: Es el mecanismo exacto mediante el cual la eficiencia operativa se convierte en flujo de caja libre para pagar deuda.",
+      interp: "A pesar de facturar S/ 381,826 mil más en 2025, la empresa necesitó S/ 159,918 mil MENOS de capital inmovilizado en su ciclo operativo. La productividad del KTNO (Ventas / KTNO) saltó de 3.74x a 4.71x, siendo el motor interno que permitió pagar deuda bancaria y aumentar caja.",
+      action: "Mantener el KTNO por debajo del 21% de las ventas anuales (en 2025 bajó de 26.7% a 21.2%)."
+    },
+    proc_rotact: {
+      persp: "Perspectiva Procesos Internos — Uso de Capacidad",
+      badge: "Óptimo",
+      badgeClass: "b-green",
+      title: "Rotación de Activos Totales",
+      v24: "0.75x",
+      v25: "0.82x",
+      varText: "+0.07x",
+      varClass: "pos",
+      b24: 75.0,
+      b25: 82.0,
+      formula: "Ingresos Ordinarios (S/ 4,750,922) / Activo Total (S/ 5,771,493)  |  Meta: >0.50x",
+      causal: "Nivel 2 → Nivel 4 (Factor DuPont): El incremento de +0.07x en la rotación de activos es uno de los dos motores directos que elevaron el ROE de 7.0% a 9.8%.",
+      interp: "Por cada sol invertido en activos, Aceros Arequipa generó S/ 0.82 de ventas en 2025 frente a S/ 0.75 en 2024, superando ampliamente el umbral mínimo de 0.50x definido en el libro Excel. La planta industrial (S/ 3,032,246 mil) absorbió el crecimiento comercial sin requerir expansión neta del balance.",
+      action: "Monitorear capacidad instalada de planta para anticipar cuellos de botella si las ventas vuelven a crecer >8% en 2026."
+    },
+    apr_admin: {
+      persp: "Perspectiva Aprendizaje y Crecimiento — Eficiencia Soporte",
+      badge: "Alerta",
+      badgeClass: "b-red",
+      title: "Peso del Gasto Administrativo",
+      v24: "2.4%",
+      v25: "2.7%",
+      varText: "+0.3 pp (+20.1% S/)",
+      varClass: "neg",
+      b24: 60.0,
+      b25: 67.5,
+      formula: "Gastos de Administración (S/ 126,840) / Ingresos (S/ 4,750,922)",
+      causal: "Nivel 1 (Causa Inicial en Rojo): Según la Diapositiva 18 del curso, los Gastos de Administración reflejan rotación/estructura de talento. Su alza del +20.1% causó directamente la caída de -0.3 pp en el Margen Operativo.",
+      interp: "Principal foco de alerta del CMI: mientras los ingresos crecieron +8.7%, los gastos administrativos saltaron +20.1% (+S/ 21,230 mil), subiendo de 2.42% a 2.67% de las ventas. Este sobrecosto restó 0.25 puntos porcentuales al margen operativo (equivalente a ~S/ 12,000 mil de EBIT perdido).",
+      action: "Revisar la Nota 25 (Gastos de Administración) para separar gastos no recurrentes (reestructuraciones, consultorías) de inflación de planilla fija y fijar techo <= 2.4% en 2026."
+    },
+    apr_intang: {
+      persp: "Perspectiva Aprendizaje y Crecimiento — Innovación/TI",
+      badge: "Vigilancia",
+      badgeClass: "b-amber",
+      title: "Activos Intangibles Netos (Distintos de Plusvalía)",
+      v24: "S/ 5,400",
+      v25: "S/ 2,290",
+      varText: "-57.6% (-3,110)",
+      varClass: "neg",
+      b24: 90.0,
+      b25: 38.2,
+      formula: "Saldo Neto Activos Intangibles (Nota 15, Fila 27)",
+      causal: "Nivel 1 (Combustible Tecnológico): Una caída del 57.6% en activos de software/tecnología advierte posible desinversión digital que podría frenar la eficiencia de procesos en 2026–2027.",
+      interp: "Los activos intangibles (software, licencias, desarrollos tecnológicos) se redujeron en un 57.6% en un solo año, representando apenas el 0.04% del activo total. Esto sugiere que la amortización supera ampliamente a las nuevas inversiones digitales o de automatización de procesos.",
+      action: "Verificar si las inversiones tecnológicas se están registrando como gasto corriente (explicando parte del alza administrativa) o si existe rezago de inversión digital."
+    },
+    apr_subs: {
+      persp: "Perspectiva Aprendizaje y Crecimiento — Expansión",
+      badge: "Óptimo",
+      badgeClass: "b-green",
+      title: "Inversiones en Subsidiarias, Negocios Conjuntos y Asociadas",
+      v24: "S/ 235,298",
+      v25: "S/ 301,112",
+      varText: "+28.0% (+65,814)",
+      varClass: "pos",
+      b24: 67.2,
+      b25: 86.0,
+      formula: "Inversiones No Corrientes (Nota 11, Fila 22)",
+      causal: "Nivel 1 → Nivel 4 (Catalizador Estratégico): Esta inversión de +S/ 65,814 mil en el ecosistema corporativo explicó el 76% del crecimiento de la Utilidad Neta en 2025.",
+      interp: "La inversión patrimonial en subsidiarias y asociadas creció +S/ 65,814 mil (+28.0%), y su contribución en resultados dio un vuelco extraordinario: pasó de una pérdida de -S/ 10,368 mil en 2024 a una ganancia de +S/ 65,223 mil en 2025 (un retorno implicado superior al 21% sobre el saldo final).",
+      action: "Analizar los Estados Financieros Consolidados y la Nota 11 para identificar qué subsidiarias lideraron este salto y evaluar su sostenibilidad."
+    },
+    apr_reten: {
+      persp: "Perspectiva Aprendizaje y Crecimiento — Reinversión",
+      badge: "Óptimo",
+      badgeClass: "b-green",
+      title: "Resultados Acumulados (Capitalización Interna)",
+      v24: "S/ 1,385,475",
+      v25: "S/ 1,574,463",
+      varText: "+13.6% (+188,988)",
+      varClass: "pos",
+      b24: 77.0,
+      b25: 87.5,
+      formula: "Resultados Acumulados Patrimonio (Nota 21, Fila 49)",
+      causal: "Ciclo de Retroalimentación (Nivel 4 → Nivel 1): Las utilidades retenidas del ejercicio anterior financian las inversiones de crecimiento y tecnología del siguiente ciclo.",
+      interp: "De los S/ 295,928 mil ganados en 2025 (más el saldo previo), los resultados acumulados aumentaron en S/ 188,988 mil, elevando el patrimonio total a S/ 3,012,236 mil (52.2% del financiamiento total). Esta política de retención fortalece la autonomía financiera para futuros ciclos de expansión.",
+      action: "Mantener el equilibrio entre distribución de dividendos y retención de utilidades para sostener un ROE creciente sin elevar deuda."
+    }
+  };
+
+  function selectItem(id) {
+    const data = kpiDatabase[id];
+    if (!data) return;
+
+    // Highlight selected card, causal node, and table row
+    document.querySelectorAll('.kpi-card, .kpi-row, .c-node').forEach(el => el.classList.remove('selected'));
+    document.querySelectorAll(`[data-id="${id}"]`).forEach(el => el.classList.add('selected'));
+
+    // Update Inspector
+    document.getElementById('inspPersp').textContent = data.persp;
+    const badgeEl = document.getElementById('inspBadge');
+    badgeEl.textContent = data.badge;
+    badgeEl.className = 'badge ' + data.badgeClass;
+
+    document.getElementById('inspTitle').textContent = data.title;
+    document.getElementById('insp2024').textContent = data.v24;
+    document.getElementById('insp2025').textContent = data.v25;
+
+    const varEl = document.getElementById('inspVar');
+    varEl.textContent = data.varText;
+    varEl.className = 'm-val ' + data.varClass;
+
+    document.getElementById('inspBar24').style.width = data.b24 + '%';
+    document.getElementById('inspBar25').style.width = data.b25 + '%';
+
+    document.getElementById('inspFormula').textContent = data.formula;
+    document.getElementById('inspCausal').textContent = data.causal;
+    document.getElementById('inspInterp').textContent = data.interp;
+    document.getElementById('inspAction').textContent = data.action;
+
+    // En pantallas angostas el panel queda debajo del tablero: llevar al usuario hasta él
+    const ip = document.getElementById('inspectorPanel');
+    const ev = window.event;
+    if (ev && ev.target && ev.target.closest) {
+      cmiOrigin = ev.target.closest('[data-id]');
+      if (getComputedStyle(ip).position === 'static') ip.scrollIntoView({behavior:'smooth', block:'start'});
+    }
+  }
+  let cmiOrigin = null;
+  function cmiBack() {
+    if (cmiOrigin) cmiOrigin.scrollIntoView({behavior:'smooth', block:'center'});
+  }
+
+  // Etiquetas de columna para que las tablas se vean como tarjetas en celular
+  document.querySelectorAll('#s-cmi table').forEach(t => {
+    const heads = [...t.querySelectorAll('thead th')].map(x => x.textContent.trim());
+    t.querySelectorAll('tbody tr').forEach(tr => [...tr.children].forEach((td,i) => td.setAttribute('data-label', heads[i] || '')));
+  });
+
+  function filterPerspective(perspective, btn) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.perspective-section').forEach(sec => {
+      if (perspective === 'all' || sec.dataset.perspective === perspective) {
+        sec.classList.remove('hidden');
+      } else {
+        sec.classList.add('hidden');
+      }
+    });
+  }
+
+  function searchKPIs() {
+    const query = document.getElementById('searchInput').value.toLowerCase().trim();
+    document.querySelectorAll('.kpi-row').forEach(row => {
+      const text = row.textContent.toLowerCase();
+      row.style.display = text.includes(query) ? '' : 'none';
+    });
+  }
+</script>
+</body>
+</html>
